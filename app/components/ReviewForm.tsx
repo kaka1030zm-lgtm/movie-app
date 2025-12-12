@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Star, Calendar, Film } from "lucide-react";
 import { MovieSearchResult } from "./types";
-import { ReviewInsert } from "../../types/database";
+import { Review, ReviewInsert } from "../../types/database";
 import { format } from "date-fns";
 import { ja } from "date-fns/locale";
 

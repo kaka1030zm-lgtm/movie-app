@@ -87,12 +87,6 @@ export default function MovieCard({
           <h3 className="text-sm font-semibold text-white line-clamp-2 mb-1">
             {movie.title}
           </h3>
-          {movie.vote_average > 0 && (
-            <div className="flex items-center gap-1 text-xs text-zinc-400">
-              <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-              <span>{movie.vote_average.toFixed(1)}</span>
-            </div>
-          )}
         </div>
       </button>
     </div>
