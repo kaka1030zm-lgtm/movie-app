@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import MovieSearch from "./components/MovieSearch";
+import MovieCarousel from "./components/MovieCarousel";
 import RatingForm from "./components/RatingForm";
 import ReviewList from "./components/ReviewList";
 import { MovieSearchResult, Review, ReviewInput } from "@/types/movie";
@@ -12,10 +13,16 @@ import {
   deleteReview,
   getReviewByMovieId,
 } from "@/lib/reviews";
+import { getPopularMovies } from "@/lib/tmdb";
+
+type TabType = "popular" | "reviews";
 
 export default function Home() {
+  const [activeTab, setActiveTab] = useState<TabType>("popular");
   const [selectedMovie, setSelectedMovie] = useState<MovieSearchResult | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [popularMovies, setPopularMovies] = useState<MovieSearchResult[]>([]);
+  const [isLoadingPopular, setIsLoadingPopular] = useState(false);
   const [editingReview, setEditingReview] = useState<Review | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
 
@@ -24,17 +31,47 @@ export default function Home() {
     loadReviews();
   }, []);
 
+  // 人気映画を読み込む
+  useEffect(() => {
+    loadPopularMovies();
+  }, []);
+
   const loadReviews = () => {
     const allReviews = getAllReviews();
-    // 作成日時の降順でソート
-    setReviews(allReviews.sort((a, b) => 
-      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-    ));
+    setReviews(
+      allReviews.sort(
+        (a, b) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      )
+    );
+  };
+
+  const loadPopularMovies = async () => {
+    setIsLoadingPopular(true);
+    try {
+      const movies = await getPopularMovies();
+      setPopularMovies(
+        movies.map((movie) => ({
+          id: movie.id,
+          title: movie.title || movie.name || "",
+          poster_path: movie.poster_path,
+          release_date: movie.release_date || movie.first_air_date || null,
+          overview: movie.overview,
+          vote_average: movie.vote_average,
+          popularity: movie.popularity,
+          genres: movie.genres,
+          media_type: movie.media_type as "movie" | "tv",
+        }))
+      );
+    } catch (error) {
+      console.error("Error loading popular movies:", error);
+    } finally {
+      setIsLoadingPopular(false);
+    }
   };
 
   const handleMovieSelect = (movie: MovieSearchResult) => {
     setSelectedMovie(movie);
-    // 既存のレビューをチェック
     const existing = getReviewByMovieId(movie.id);
     setEditingReview(existing);
     setIsFormOpen(true);
@@ -42,18 +79,15 @@ export default function Home() {
 
   const handleSaveReview = (reviewInput: ReviewInput) => {
     if (editingReview) {
-      // 更新
       const updated = updateReview(editingReview.id, reviewInput);
       if (updated) {
         loadReviews();
       }
     } else {
-      // 新規作成
       saveReview(reviewInput);
       loadReviews();
     }
 
-    // フォームを閉じる
     setIsFormOpen(false);
     setSelectedMovie(null);
     setEditingReview(null);
@@ -66,7 +100,6 @@ export default function Home() {
   };
 
   const handleEdit = (review: Review) => {
-    // レビューから映画情報を復元
     const movie: MovieSearchResult = {
       id: review.movie_id,
       title: review.movie_title,
@@ -101,14 +134,65 @@ export default function Home() {
           <MovieSearch onMovieSelect={handleMovieSelect} />
         </div>
 
-        {/* レビュー一覧セクション */}
-        <div>
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-white">
+        {/* タブ */}
+        <div className="mb-8 border-b border-[#1a1a1a]">
+          <div className="flex gap-1">
+            <button
+              onClick={() => setActiveTab("popular")}
+              className={`px-6 py-3 font-medium transition-all duration-300 relative ${
+                activeTab === "popular"
+                  ? "text-[#D4AF37]"
+                  : "text-gray-400 hover:text-gray-300"
+              }`}
+            >
+              人気の映画
+              {activeTab === "popular" && (
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#D4AF37] animate-in slide-in-from-left duration-300" />
+              )}
+            </button>
+            <button
+              onClick={() => setActiveTab("reviews")}
+              className={`px-6 py-3 font-medium transition-all duration-300 relative ${
+                activeTab === "reviews"
+                  ? "text-[#D4AF37]"
+                  : "text-gray-400 hover:text-gray-300"
+              }`}
+            >
               マイレビュー ({reviews.length})
-            </h2>
+              {activeTab === "reviews" && (
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#D4AF37] animate-in slide-in-from-left duration-300" />
+              )}
+            </button>
           </div>
-          <ReviewList reviews={reviews} onEdit={handleEdit} onDelete={handleDelete} />
+        </div>
+
+        {/* タブコンテンツ */}
+        <div className="animate-in fade-in duration-300">
+          {activeTab === "popular" && (
+            <div>
+              {isLoadingPopular ? (
+                <div className="flex justify-center items-center py-12">
+                  <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#D4AF37] border-t-transparent"></div>
+                </div>
+              ) : (
+                <MovieCarousel
+                  movies={popularMovies}
+                  onMovieSelect={handleMovieSelect}
+                  title="人気の映画"
+                />
+              )}
+            </div>
+          )}
+
+          {activeTab === "reviews" && (
+            <div>
+              <ReviewList
+                reviews={reviews}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+              />
+            </div>
+          )}
         </div>
       </main>
 
@@ -116,10 +200,14 @@ export default function Home() {
       {isFormOpen && selectedMovie && (
         <RatingForm
           movie={selectedMovie}
-          existingReview={editingReview ? {
-            ratings: editingReview.ratings,
-            comment: editingReview.comment,
-          } : null}
+          existingReview={
+            editingReview
+              ? {
+                  ratings: editingReview.ratings,
+                  comment: editingReview.comment,
+                }
+              : null
+          }
           onSave={handleSaveReview}
           onCancel={handleCancel}
         />

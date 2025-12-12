@@ -21,25 +21,25 @@ export default function ReviewList({ reviews, onEdit, onDelete }: ReviewListProp
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
       {reviews.map((review) => {
         const posterUrl = getPosterUrl(review.movie_poster_path);
         return (
           <div
             key={review.id}
-            className="group flex flex-col h-full overflow-hidden rounded-lg border border-[#1a1a1a] bg-[#0a0a0a] hover:border-[#D4AF37]/50 transition-all"
+            className="group flex flex-col h-full overflow-hidden rounded-lg border border-[#1a1a1a] bg-[#0a0a0a] hover:border-[#D4AF37]/50 transition-all duration-300"
           >
             {/* 画像エリア */}
-            <div className="relative w-full aspect-[2/3] overflow-hidden">
+            <div className="relative w-full aspect-[2/3] overflow-hidden rounded-t-lg">
               {posterUrl ? (
                 <img
                   src={posterUrl}
                   alt={review.movie_title}
-                  className="object-cover w-full h-full transition-transform group-hover:scale-105"
+                  className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-110"
                 />
               ) : (
                 <div className="w-full h-full bg-[#2a2a2a] flex flex-col items-center justify-center">
-                  <Film className="h-12 w-12 text-gray-600 mb-2" />
+                  <Film className="h-8 w-8 text-gray-600 mb-2" />
                   <p className="text-xs text-gray-500 text-center px-2 line-clamp-2">
                     {review.movie_title}
                   </p>

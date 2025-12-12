@@ -1,3 +1,16 @@
+// ジャンルの型定義
+export interface Genre {
+  id: number;
+  name: string;
+}
+
+// キャスト・スタッフの型定義
+export interface Person {
+  id: number;
+  name: string;
+  profile_path: string | null;
+}
+
 // 映画検索結果の型定義
 export interface MovieSearchResult {
   id: number;
@@ -6,6 +19,11 @@ export interface MovieSearchResult {
   release_date: string | null;
   overview: string | null;
   vote_average?: number;
+  popularity?: number;
+  genres?: Genre[];
+  director?: Person | null;
+  cast?: Person[];
+  media_type?: "movie" | "tv";
 }
 
 // 評価項目の型定義
