@@ -609,9 +609,7 @@ export default function Home() {
             )}
             {recommendedMovies.length > 0 && (
               <div>
-                <h2 className="mb-6 text-2xl font-bold bg-gradient-to-r from-white via-white to-[#d4af37] bg-clip-text text-transparent tracking-tight">
-                  あなたに合わせたピックアップ
-                </h2>
+                <h2 className="mb-4 text-2xl font-bold text-yellow-500">あなたに合わせたピックアップ</h2>
                 <MovieCarousel
                   title=""
                   movies={recommendedMovies}
@@ -621,11 +619,9 @@ export default function Home() {
             )}
             {!isLoggedIn && recommendedMovies.length === 0 && (
               <div className="mb-6">
-                <h2 className="mb-4 text-2xl font-bold bg-gradient-to-r from-white via-white to-[#d4af37] bg-clip-text text-transparent tracking-tight">
-                  あなたに合わせたピックアップ
-                </h2>
-                <div className="mt-4 rounded-2xl border border-[#d4af37]/30 bg-[#d4af37]/10 backdrop-blur-xl p-6">
-                  <p className="text-[#d4af37] mb-4 font-semibold">
+                <h2 className="mb-4 text-2xl font-bold text-yellow-500">あなたに合わせたピックアップ</h2>
+                <div className="mt-4 rounded-lg border border-amber-400/50 bg-amber-400/10 p-4">
+                  <p className="text-amber-400 mb-3">
                     ログインしてパーソナライズされたおすすめを見る
                   </p>
                   <button
@@ -637,7 +633,7 @@ export default function Home() {
                         setToast({ message: "ログインしました", type: "success" });
                       }
                     }}
-                    className="rounded-xl bg-gradient-to-r from-[#d4af37] to-[#f4d03f] px-6 py-3 font-semibold text-black transition-all duration-300 hover:from-[#f4d03f] hover:to-[#d4af37] shadow-lg shadow-[#d4af37]/20 hover:shadow-[#d4af37]/30 hover:scale-105"
+                    className="rounded-lg bg-amber-400 px-6 py-2 font-medium text-black transition-colors hover:bg-amber-300"
                   >
                     ログイン
                   </button>
@@ -646,10 +642,8 @@ export default function Home() {
             )}
             {isLoggedIn && watchlist.length === 0 && recommendedMovies.length === 0 && (
               <div className="mb-6">
-                <h2 className="mb-4 text-2xl font-bold bg-gradient-to-r from-white via-white to-[#d4af37] bg-clip-text text-transparent tracking-tight">
-                  あなたに合わせたピックアップ
-                </h2>
-                <p className="text-sm text-white/50 mt-2 font-medium">
+                <h2 className="mb-4 text-2xl font-bold text-yellow-500">あなたに合わせたピックアップ</h2>
+                <p className="text-sm text-zinc-400 mt-2">
                   まだ見たいリストに映画がありません。映画を検索して追加すると、あなたのためのおすすめが表示されます。
                 </p>
               </div>
