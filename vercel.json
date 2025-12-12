@@ -1,6 +1,6 @@
 {
   "functions": {
-    "build/index.js": {
+    "api/*.js": {
       "runtime": "node@20.x"
     }
   }
