@@ -53,7 +53,7 @@ export default function MovieCard({
           {movie.poster_path ? (
             <img
               src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
-              alt={movie.title || movie.name}
+              alt={movie.title}
               className="h-full w-full object-cover rounded-lg"
             />
           ) : (
