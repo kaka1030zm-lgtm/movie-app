@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import Header from "./components/Header";
 import MovieSearch from "./components/MovieSearch";
+import MovieCard from "./components/MovieCard";
 import ReviewForm from "./components/ReviewForm";
 import MovieList from "./components/MovieList";
 import MovieDetailModal from "./components/MovieDetailModal";
@@ -24,6 +25,8 @@ export default function Home() {
   const [selectedMovieForDetail, setSelectedMovieForDetail] = useState<MovieSearchResult | null>(null);
   const [popularMovies, setPopularMovies] = useState<MovieSearchResult[]>([]);
   const [recommendedMovies, setRecommendedMovies] = useState<MovieSearchResult[]>([]);
+  const [searchResults, setSearchResults] = useState<MovieSearchResult[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -249,13 +252,18 @@ export default function Home() {
   };
 
   const displayMovies = useMemo(() => {
+    // 検索クエリがある場合は検索結果を表示
+    if (searchQuery.trim()) {
+      return searchResults;
+    }
+    // 空欄の場合は人気映画リストを表示
     if (activeTab === "popular") return popularMovies;
     if (activeTab === "recommended") return recommendedMovies;
     return [];
-  }, [activeTab, popularMovies, recommendedMovies]);
+  }, [activeTab, popularMovies, recommendedMovies, searchQuery, searchResults]);
 
   return (
-    <div className="min-h-screen min-h-[100dvh] bg-black text-white" style={{ backgroundColor: '#000000', color: '#ffffff' }}>
+    <div className="min-h-screen min-h-[100dvh] bg-[#121212] text-white">
       <Header />
       <main className="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
         {/* タブ */}
@@ -315,7 +323,7 @@ export default function Home() {
           />
         ) : (
           <div className="space-y-6">
-            {activeTab === "recommended" && (
+            {activeTab === "recommended" && !searchQuery.trim() && (
               <div className="mb-4">
                 <h2 className="text-xl font-semibold text-white">{t.recommended}</h2>
                 <p className="text-sm text-zinc-400">{t.recommendationSub}</p>
@@ -323,7 +331,20 @@ export default function Home() {
             )}
 
             {/* 検索 */}
-            <MovieSearch onSelectMovie={handleSelectMovie} />
+            <MovieSearch
+              onSearchResults={setSearchResults}
+              onQueryChange={setSearchQuery}
+              isLoading={isLoading}
+            />
+
+            {/* 検索結果タイトル */}
+            {searchQuery.trim() && (
+              <div className="mb-4">
+                <h2 className="text-xl font-semibold text-white">
+                  {t.searchResults} {searchResults.length > 0 && `(${searchResults.length})`}
+                </h2>
+              </div>
+            )}
 
             {/* エラーメッセージ */}
             {error && (
@@ -338,51 +359,33 @@ export default function Home() {
             )}
 
             {/* 映画リスト */}
-            {isLoading ? (
-              <div className="flex items-center justify-center py-12">
-                <div className="text-center">
-                  <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-zinc-700 border-t-amber-400"></div>
-                  <p className="text-zinc-400">{t.processing}</p>
-                </div>
-              </div>
-            ) : displayMovies.length > 0 ? (
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-                {displayMovies.map((movie) => (
-                  <button
-                    key={movie.id}
-                    onClick={() => setSelectedMovieForDetail(movie)}
-                    className="group relative overflow-hidden rounded-lg border border-zinc-800 bg-zinc-900/50 transition-all hover:border-amber-400/50 hover:bg-zinc-800/50"
-                  >
-                    {movie.poster_path ? (
-                      <img
-                        src={`https://image.tmdb.org/t/p/w342${movie.poster_path}`}
-                        alt={movie.title || movie.name}
-                        className="h-full w-full object-cover transition-transform group-hover:scale-105"
-                      />
-                    ) : (
-                      <div className="flex h-64 w-full items-center justify-center bg-zinc-800">
-                        <span className="text-4xl">🎬</span>
-                      </div>
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100">
-                      <div className="absolute bottom-0 left-0 right-0 p-3">
-                        <h3 className="text-sm font-semibold text-white">
-                          {movie.title || movie.name}
-                        </h3>
-                        {movie.vote_average > 0 && (
-                          <p className="mt-1 text-xs text-zinc-300">
-                            ⭐ {movie.vote_average.toFixed(1)}
-                          </p>
-                        )}
-                      </div>
+            {isLoading && !searchQuery.trim() ? (
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+                {[...Array(8)].map((_, i) => (
+                  <div key={i} className="group relative overflow-hidden rounded-lg bg-zinc-900/50 animate-pulse">
+                    <div className="aspect-[2/3] w-full bg-zinc-800"></div>
+                    <div className="p-3 space-y-2">
+                      <div className="h-4 bg-zinc-800 rounded w-3/4"></div>
+                      <div className="h-3 bg-zinc-800 rounded w-1/2"></div>
                     </div>
-                  </button>
+                  </div>
                 ))}
               </div>
-            ) : !isLoading && !error ? (
+            ) : displayMovies.length > 0 ? (
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+                {displayMovies.map((movie) => (
+                  <MovieCard
+                    key={movie.id}
+                    movie={movie}
+                    onClick={() => setSelectedMovieForDetail(movie)}
+                    isLoading={false}
+                  />
+                ))}
+              </div>
+            ) : !isLoading && !error && searchQuery.trim() ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <span className="mb-4 text-6xl">🎬</span>
-                <p className="text-zinc-400">映画が見つかりませんでした</p>
+                <p className="text-zinc-400">検索結果が見つかりませんでした</p>
               </div>
             ) : null}
           </div>
