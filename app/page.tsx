@@ -33,6 +33,7 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
+  const [watchlistLoading, setWatchlistLoading] = useState<{ [movieId: number]: boolean }>({});
 
   const TMDB_API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 
@@ -308,7 +309,25 @@ export default function Home() {
     setReviews((prev) => prev.filter((r) => r.id !== id));
   };
 
-  const handleAddToWatchlist = (movie: MovieSearchResult) => {
+  const handleAddToWatchlist = async (movie: MovieSearchResult, e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+    }
+
+    // 認証チェック（簡易版）
+    const userId = getUserId();
+    if (!userId) {
+      setToast({ message: "ログインが必要です", type: "error" });
+      return;
+    }
+
+    // 既に存在するかチェック
+    if (watchlist.some((item) => item.id === movie.id)) {
+      setToast({ message: "既に見たいリストに追加されています", type: "info" });
+      return;
+    }
+
+    // オプティミスティックUI: 即座にUIを更新
     const watchlistItem: WatchlistItem = {
       id: movie.id,
       title: movie.title || movie.name || "",
@@ -320,14 +339,87 @@ export default function Home() {
       addedAt: new Date().toISOString(),
     };
 
-    // 既に存在するかチェック
-    if (!watchlist.some((item) => item.id === movie.id)) {
-      setWatchlist((prev) => [...prev, watchlistItem]);
+    const previousWatchlist = [...watchlist];
+    setWatchlist((prev) => [...prev, watchlistItem]);
+    setWatchlistLoading((prev) => ({ ...prev, [movie.id]: true }));
+
+    try {
+      // APIリクエスト（将来的な実装）
+      // const response = await fetch("/api/watchlist", {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify({ movieId: movie.id, userId }),
+      // });
+      // if (!response.ok) throw new Error("Failed to add to watchlist");
+
+      // 成功時のトースト通知
+      setToast({ 
+        message: `「${movie.title || movie.name}」を見たいリストに追加しました`, 
+        type: "success" 
+      });
+    } catch (error) {
+      // エラー時はロールバック
+      setWatchlist(previousWatchlist);
+      setToast({ 
+        message: "操作に失敗しました。ログイン状態を確認してください。", 
+        type: "error" 
+      });
+    } finally {
+      setWatchlistLoading((prev) => {
+        const newState = { ...prev };
+        delete newState[movie.id];
+        return newState;
+      });
     }
   };
 
-  const handleRemoveFromWatchlist = (id: number) => {
+  const handleRemoveFromWatchlist = async (id: number, e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+    }
+
+    // 認証チェック（簡易版）
+    const userId = getUserId();
+    if (!userId) {
+      setToast({ message: "ログインが必要です", type: "error" });
+      return;
+    }
+
+    const item = watchlist.find((w) => w.id === id);
+    const previousWatchlist = [...watchlist];
+
+    // オプティミスティックUI: 即座にUIを更新
     setWatchlist((prev) => prev.filter((item) => item.id !== id));
+    setWatchlistLoading((prev) => ({ ...prev, [id]: true }));
+
+    try {
+      // APIリクエスト（将来的な実装）
+      // const response = await fetch(`/api/watchlist/${id}`, {
+      //   method: "DELETE",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify({ userId }),
+      // });
+      // if (!response.ok) throw new Error("Failed to remove from watchlist");
+
+      // 成功時のトースト通知
+      setToast({ 
+        message: `「${item?.title || ""}」を見たいリストから削除しました`, 
+        type: "info" 
+      });
+    } catch (error) {
+      // エラー時はロールバック
+      setWatchlist(previousWatchlist);
+      setToast({ 
+        message: "操作に失敗しました。ログイン状態を確認してください。", 
+        type: "error" 
+      });
+    } finally {
+      setWatchlistLoading((prev) => {
+        const newState = { ...prev };
+        delete newState[id];
+        return newState;
+      });
+    }
   };
 
   const handleAddReviewFromWatchlist = (item: WatchlistItem) => {
@@ -499,6 +591,15 @@ export default function Home() {
                       movie={movie}
                       onClick={() => setSelectedMovieForDetail(movie)}
                       isLoading={false}
+                      isInWatchlist={isMovieInWatchlist(movie.id)}
+                      onToggleWatchlist={(movie, e) => {
+                        if (isMovieInWatchlist(movie.id)) {
+                          handleRemoveFromWatchlist(movie.id, e);
+                        } else {
+                          handleAddToWatchlist(movie, e);
+                        }
+                      }}
+                      isWatchlistLoading={watchlistLoading[movie.id] || false}
                     />
                   </div>
                 ))}

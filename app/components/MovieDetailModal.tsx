@@ -10,8 +10,8 @@ interface MovieDetailModalProps {
   isInWatchlist: boolean;
   existingReview?: ReviewRecord | null;
   onClose: () => void;
-  onAddToWatchlist: (movie: MovieSearchResult) => void;
-  onRemoveFromWatchlist: (movieId: number) => void;
+  onAddToWatchlist: (movie: MovieSearchResult) => Promise<void>;
+  onRemoveFromWatchlist: (movieId: number) => Promise<void>;
   onWriteReview: (movie: MovieSearchResult) => void;
 }
 
@@ -78,11 +78,11 @@ export default function MovieDetailModal({
 
   if (!movie) return null;
 
-  const handleWatchlistToggle = () => {
+  const handleWatchlistToggle = async () => {
     if (isInWatchlist) {
-      onRemoveFromWatchlist(movie.id);
+      await onRemoveFromWatchlist(movie.id);
     } else {
-      onAddToWatchlist(movie);
+      await onAddToWatchlist(movie);
     }
   };
 
