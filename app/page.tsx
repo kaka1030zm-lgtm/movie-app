@@ -26,6 +26,7 @@ export default function Home() {
   const [editingReview, setEditingReview] = useState<ReviewRecord | null>(null);
   const [selectedMovieForDetail, setSelectedMovieForDetail] = useState<MovieSearchResult | null>(null);
   const [popularMovies, setPopularMovies] = useState<MovieSearchResult[]>([]);
+  const [regionalPopularMovies, setRegionalPopularMovies] = useState<MovieSearchResult[]>([]);
   const [topRatedMovies, setTopRatedMovies] = useState<MovieSearchResult[]>([]);
   const [recommendedMovies, setRecommendedMovies] = useState<MovieSearchResult[]>([]);
   const [searchResults, setSearchResults] = useState<MovieSearchResult[]>([]);
@@ -34,6 +35,8 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
   const [watchlistLoading, setWatchlistLoading] = useState<{ [movieId: number]: boolean }>({});
+  const [countryCode, setCountryCode] = useState<string>("JP");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const TMDB_API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 
@@ -99,7 +102,31 @@ export default function Home() {
     }
   }, [watchlist]);
 
-  // 人気の映画を取得（カルーセル用）
+  // 地域情報を取得
+  useEffect(() => {
+    const fetchRegion = async () => {
+      try {
+        const response = await fetch("/api/region");
+        const data = await response.json();
+        setCountryCode(data.countryCode || "JP");
+      } catch (error) {
+        console.error("Error fetching region:", error);
+        setCountryCode("JP");
+      }
+    };
+
+    fetchRegion();
+  }, []);
+
+  // ログイン状態をチェック
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const userId = localStorage.getItem("cinelog_userId");
+      setIsLoggedIn(!!userId);
+    }
+  }, []);
+
+  // 世界の人気映画を取得（カルーセル用）
   useEffect(() => {
     const fetchPopularMovies = async () => {
       if (!TMDB_API_KEY) {
@@ -108,7 +135,7 @@ export default function Home() {
 
       try {
         const response = await fetch(
-          `https://api.themoviedb.org/3/movie/popular?api_key=${TMDB_API_KEY}&language=${apiLang}&region=JP`
+          `https://api.themoviedb.org/3/movie/popular?api_key=${TMDB_API_KEY}&language=${apiLang}&page=1`
         );
 
         if (!response.ok) {
@@ -130,6 +157,43 @@ export default function Home() {
 
     fetchPopularMovies();
   }, [TMDB_API_KEY, apiLang]);
+
+  // 国内人気映画を取得（動的）
+  useEffect(() => {
+    const fetchRegionalPopularMovies = async () => {
+      if (!TMDB_API_KEY || !countryCode) {
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          `https://api.themoviedb.org/3/movie/popular?api_key=${TMDB_API_KEY}&language=${apiLang}&region=${countryCode}`
+        );
+
+        if (!response.ok) {
+          throw new Error(`API Error: ${response.status} ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        
+        if (data.results && data.results.length > 0) {
+          // 重複排除: 世界の人気映画のIDを除外
+          const worldMovieIds = new Set(popularMovies.map(m => m.id));
+          const filtered = data.results.filter((m: MovieSearchResult) => !worldMovieIds.has(m.id));
+          setRegionalPopularMovies(filtered.slice(0, 20));
+        } else {
+          setRegionalPopularMovies([]);
+        }
+      } catch (error) {
+        console.error("Error fetching regional popular movies:", error);
+        setRegionalPopularMovies([]);
+      }
+    };
+
+    if (popularMovies.length > 0) {
+      fetchRegionalPopularMovies();
+    }
+  }, [TMDB_API_KEY, apiLang, countryCode, popularMovies]);
 
   // 高評価映画を取得（カルーセル用）
   useEffect(() => {
@@ -166,30 +230,86 @@ export default function Home() {
   // おすすめ映画を取得（見たいリストに基づく）
   useEffect(() => {
     const fetchRecommendedMovies = async () => {
-      if (watchlist.length === 0 || !TMDB_API_KEY) {
-        setRecommendedMovies([]);
+      if (!TMDB_API_KEY) {
         return;
       }
 
       setIsLoading(true);
       try {
-        // 見たいリストの最初の作品のジャンルに基づいておすすめを取得
-        const firstItem = watchlist[0];
-        const response = await fetch(
-          `https://api.themoviedb.org/3/${firstItem.mediaType}/${firstItem.id}?api_key=${TMDB_API_KEY}&language=${apiLang}`
-        );
-        const details = await response.json();
+        // 未ログインの場合
+        if (!isLoggedIn) {
+          setRecommendedMovies([]);
+          setIsLoading(false);
+          return;
+        }
 
-        if (details.genres && details.genres.length > 0) {
-          const genreId = details.genres[0].id;
+        // 見たいリストが空の場合: 世界の人気映画のPage 2を取得
+        if (watchlist.length === 0) {
+          const response = await fetch(
+            `https://api.themoviedb.org/3/movie/popular?api_key=${TMDB_API_KEY}&language=${apiLang}&page=2`
+          );
+          const data = await response.json();
+          
+          // 重複排除: 世界+国内の人気映画のIDを除外
+          const worldMovieIds = new Set(popularMovies.map(m => m.id));
+          const regionalMovieIds = new Set(regionalPopularMovies.map(m => m.id));
+          const allExcludedIds = new Set([...worldMovieIds, ...regionalMovieIds]);
+          
+          const filtered = (data.results || []).filter((m: MovieSearchResult) => !allExcludedIds.has(m.id));
+          setRecommendedMovies(filtered.slice(0, 20));
+          setIsLoading(false);
+          return;
+        }
+
+        // 見たいリストがある場合: パーソナライズロジック
+        // 見たいリストの全映画のジャンルと公開日を分析
+        const genreIds = new Set<number>();
+        const mediaTypes = new Set<string>();
+        
+        // 見たいリストの各映画の詳細を取得してジャンルを収集
+        const detailsPromises = watchlist.slice(0, 5).map(async (item) => {
+          try {
+            const response = await fetch(
+              `https://api.themoviedb.org/3/${item.mediaType}/${item.id}?api_key=${TMDB_API_KEY}&language=${apiLang}`
+            );
+            const details = await response.json();
+            if (details.genres) {
+              details.genres.forEach((g: { id: number }) => genreIds.add(g.id));
+            }
+            mediaTypes.add(item.mediaType);
+            return details;
+          } catch (error) {
+            console.error(`Error fetching details for ${item.id}:`, error);
+            return null;
+          }
+        });
+
+        await Promise.all(detailsPromises);
+
+        // ジャンルIDを配列に変換
+        const genreIdsArray = Array.from(genreIds);
+        const mediaType = mediaTypes.has("tv") ? "tv" : "movie";
+
+        if (genreIdsArray.length > 0) {
+          // /discoverエンドポイントで類似映画を検索
           const recResponse = await fetch(
-            `https://api.themoviedb.org/3/discover/${firstItem.mediaType}?api_key=${TMDB_API_KEY}&language=${apiLang}&with_genres=${genreId}&sort_by=popularity.desc`
+            `https://api.themoviedb.org/3/discover/${mediaType}?api_key=${TMDB_API_KEY}&language=${apiLang}&with_genres=${genreIdsArray.join(",")}&sort_by=popularity.desc&page=1`
           );
           const recData = await recResponse.json();
-          setRecommendedMovies(recData.results?.slice(0, 20) || []);
+          
+          // 重複排除: 世界+国内の人気映画のIDを除外
+          const worldMovieIds = new Set(popularMovies.map(m => m.id));
+          const regionalMovieIds = new Set(regionalPopularMovies.map(m => m.id));
+          const allExcludedIds = new Set([...worldMovieIds, ...regionalMovieIds]);
+          
+          const filtered = (recData.results || []).filter((m: MovieSearchResult) => !allExcludedIds.has(m.id));
+          setRecommendedMovies(filtered.slice(0, 20));
+        } else {
+          setRecommendedMovies([]);
         }
       } catch (error) {
         console.error("Error fetching recommended movies:", error);
+        setRecommendedMovies([]);
       } finally {
         setIsLoading(false);
       }
@@ -198,7 +318,7 @@ export default function Home() {
     if (activeTab === "recommended") {
       fetchRecommendedMovies();
     }
-  }, [activeTab, watchlist, TMDB_API_KEY, apiLang]);
+  }, [activeTab, watchlist, TMDB_API_KEY, apiLang, isLoggedIn, popularMovies, regionalPopularMovies]);
 
   const handleSelectMovie = (movie: MovieSearchResult) => {
     setSelectedMovie(movie);
@@ -466,8 +586,15 @@ export default function Home() {
           <div className="mt-10 mb-8">
             {popularMovies.length > 0 && (
               <MovieCarousel
-                title="🔥 人気映画"
+                title="🌍 世界の人気映画"
                 movies={popularMovies}
+                onMovieClick={setSelectedMovieForDetail}
+              />
+            )}
+            {regionalPopularMovies.length > 0 && (
+              <MovieCarousel
+                title={countryCode === "JP" ? "🇯🇵 日本の人気映画" : countryCode === "US" ? "🇺🇸 アメリカの人気映画" : `📍 ${countryCode}の人気映画`}
+                movies={regionalPopularMovies}
                 onMovieClick={setSelectedMovieForDetail}
               />
             )}
@@ -540,8 +667,34 @@ export default function Home() {
           <div className="space-y-6">
             {activeTab === "recommended" && !searchQuery.trim() && (
               <div className="mb-4">
-                <h2 className="text-xl font-semibold text-white">{t.recommended}</h2>
-                <p className="text-sm text-zinc-400">{t.recommendationSub}</p>
+                <h2 className="text-xl font-semibold text-white">あなたに合わせたピックアップ</h2>
+                {!isLoggedIn ? (
+                  <div className="mt-4 rounded-lg border border-amber-400/50 bg-amber-400/10 p-4">
+                    <p className="text-amber-400 mb-3">
+                      ログインしてパーソナライズされたおすすめを見る
+                    </p>
+                    <button
+                      onClick={() => {
+                        // 簡易的なログイン処理（実際の実装では認証モーダルを表示）
+                        if (typeof window !== "undefined") {
+                          const userId = `user_${Date.now()}`;
+                          localStorage.setItem("cinelog_userId", userId);
+                          setIsLoggedIn(true);
+                          setToast({ message: "ログインしました", type: "success" });
+                        }
+                      }}
+                      className="rounded-lg bg-amber-400 px-6 py-2 font-medium text-black transition-colors hover:bg-amber-300"
+                    >
+                      ログイン
+                    </button>
+                  </div>
+                ) : watchlist.length === 0 ? (
+                  <p className="text-sm text-zinc-400 mt-2">
+                    まだ見たいリストに映画がありません。映画を検索して追加すると、あなたのためのおすすめが表示されます。
+                  </p>
+                ) : (
+                  <p className="text-sm text-zinc-400 mt-2">{t.recommendationSub}</p>
+                )}
               </div>
             )}
 
@@ -608,6 +761,11 @@ export default function Home() {
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <span className="mb-4 text-6xl">🎬</span>
                 <p className="text-zinc-400">検索結果が見つかりませんでした</p>
+              </div>
+            ) : activeTab === "recommended" && !searchQuery.trim() && !isLoading && displayMovies.length === 0 && isLoggedIn && watchlist.length > 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <span className="mb-4 text-6xl">🎬</span>
+                <p className="text-zinc-400">おすすめ映画が見つかりませんでした</p>
               </div>
             ) : null}
           </div>
