@@ -1,12 +1,12 @@
 {
-  "name": "CineLog - 映画レビューアプリ",
-  "short_name": "CineLog",
-  "description": "映画レビューアプリ - あなたの映画体験を記録・共有",
+  "name": "MovieRating - 映画評価システム",
+  "short_name": "MovieRating",
+  "description": "映画を検索して、10段階評価で記録・管理できるアプリ",
   "version": "1.0.0",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#000000",
-  "theme_color": "#fbbf24",
+  "theme_color": "#D4AF37",
   "orientation": "portrait-primary",
   "icons": [
     {

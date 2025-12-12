@@ -13,13 +13,20 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "App",
-  description: "アプリケーション",
+  title: "MovieRating | 映画評価システム",
+  description: "映画を検索して、10段階評価で記録・管理できるアプリ",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "MovieRating",
+  },
 };
 
 export const viewport = {
   width: "device-width",
   initialScale: 1,
+  themeColor: "#D4AF37",
 };
 
 export default function RootLayout({
