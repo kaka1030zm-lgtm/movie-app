@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import Header from "./components/Header";
 import MovieSearch from "./components/MovieSearch";
 import MovieCard from "./components/MovieCard";
+import MovieCarousel from "./components/MovieCarousel";
 import ReviewForm from "./components/ReviewForm";
 import MovieList from "./components/MovieList";
 import MovieDetailModal from "./components/MovieDetailModal";
@@ -24,6 +25,7 @@ export default function Home() {
   const [editingReview, setEditingReview] = useState<ReviewRecord | null>(null);
   const [selectedMovieForDetail, setSelectedMovieForDetail] = useState<MovieSearchResult | null>(null);
   const [popularMovies, setPopularMovies] = useState<MovieSearchResult[]>([]);
+  const [topRatedMovies, setTopRatedMovies] = useState<MovieSearchResult[]>([]);
   const [recommendedMovies, setRecommendedMovies] = useState<MovieSearchResult[]>([]);
   const [searchResults, setSearchResults] = useState<MovieSearchResult[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -77,17 +79,13 @@ export default function Home() {
     }
   }, [watchlist]);
 
-  // 人気の映画を取得
+  // 人気の映画を取得（カルーセル用）
   useEffect(() => {
     const fetchPopularMovies = async () => {
       if (!TMDB_API_KEY) {
-        setError("TMDB APIキーが設定されていません。.env.localファイルにNEXT_PUBLIC_TMDB_API_KEYを設定してください。");
-        setPopularMovies([]);
         return;
       }
 
-      setIsLoading(true);
-      setError(null);
       try {
         const response = await fetch(
           `https://api.themoviedb.org/3/movie/popular?api_key=${TMDB_API_KEY}&language=${apiLang}&region=JP`
@@ -103,21 +101,47 @@ export default function Home() {
           setPopularMovies(data.results.slice(0, 20));
         } else {
           setPopularMovies([]);
-          setError("人気の映画が見つかりませんでした。");
         }
       } catch (error) {
         console.error("Error fetching popular movies:", error);
-        setError(error instanceof Error ? error.message : "映画データの取得に失敗しました。");
         setPopularMovies([]);
-      } finally {
-        setIsLoading(false);
       }
     };
 
-    if (activeTab === "popular") {
-      fetchPopularMovies();
-    }
-  }, [activeTab, TMDB_API_KEY, apiLang]);
+    fetchPopularMovies();
+  }, [TMDB_API_KEY, apiLang]);
+
+  // 高評価映画を取得（カルーセル用）
+  useEffect(() => {
+    const fetchTopRatedMovies = async () => {
+      if (!TMDB_API_KEY) {
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          `https://api.themoviedb.org/3/movie/top_rated?api_key=${TMDB_API_KEY}&language=${apiLang}&region=JP`
+        );
+
+        if (!response.ok) {
+          throw new Error(`API Error: ${response.status} ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        
+        if (data.results && data.results.length > 0) {
+          setTopRatedMovies(data.results.slice(0, 20));
+        } else {
+          setTopRatedMovies([]);
+        }
+      } catch (error) {
+        console.error("Error fetching top rated movies:", error);
+        setTopRatedMovies([]);
+      }
+    };
+
+    fetchTopRatedMovies();
+  }, [TMDB_API_KEY, apiLang]);
 
   // おすすめ映画を取得（見たいリストに基づく）
   useEffect(() => {
@@ -256,11 +280,12 @@ export default function Home() {
     if (searchQuery.trim()) {
       return searchResults;
     }
-    // 空欄の場合は人気映画リストを表示
-    if (activeTab === "popular") return popularMovies;
+    // 空欄の場合はタブに応じたリストを表示
+    // カルーセルで表示するため、グリッドには表示しない
+    if (activeTab === "popular") return []; // カルーセルで表示するため空配列
     if (activeTab === "recommended") return recommendedMovies;
     return [];
-  }, [activeTab, popularMovies, recommendedMovies, searchQuery, searchResults]);
+  }, [activeTab, recommendedMovies, searchQuery, searchResults]);
 
   return (
     <div className="min-h-screen min-h-[100dvh] bg-[#121212] text-white">
@@ -270,6 +295,26 @@ export default function Home() {
         isLoading={isLoading}
       />
       <main className="max-w-7xl mx-auto px-4 py-10 sm:px-6 lg:px-8">
+        {/* 人気/おすすめ映画カルーセル（検索結果がない場合のみ表示、検索バー直下） */}
+        {!searchQuery.trim() && activeTab === "popular" && (
+          <div className="mb-8">
+            {popularMovies.length > 0 && (
+              <MovieCarousel
+                title="🔥 人気映画"
+                movies={popularMovies}
+                onMovieClick={setSelectedMovieForDetail}
+              />
+            )}
+            {topRatedMovies.length > 0 && (
+              <MovieCarousel
+                title="⭐ 高評価映画"
+                movies={topRatedMovies}
+                onMovieClick={setSelectedMovieForDetail}
+              />
+            )}
+          </div>
+        )}
+
         {/* タブ */}
         <div className="mb-8 flex flex-wrap gap-2 border-b border-zinc-800">
           <button
