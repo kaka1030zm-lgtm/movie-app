@@ -16,15 +16,10 @@ export const metadata: Metadata = {
   title: "CineLog | Cinematic & Premium",
   description: "映画レビューアプリ - あなたの映画体験を記録・共有",
   manifest: "/manifest.json",
-  themeColor: "#fbbf24",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
     title: "CineLog",
-  },
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
   },
   icons: {
     icon: [
@@ -35,6 +30,12 @@ export const metadata: Metadata = {
       { url: "/icon.svg", sizes: "any", type: "image/svg+xml" },
     ],
   },
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#fbbf24",
 };
 
 export default function RootLayout({
