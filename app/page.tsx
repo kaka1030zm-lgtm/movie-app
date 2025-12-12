@@ -24,6 +24,7 @@ export default function Home() {
   const [popularMovies, setPopularMovies] = useState<MovieSearchResult[]>([]);
   const [recommendedMovies, setRecommendedMovies] = useState<MovieSearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const TMDB_API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 
@@ -67,30 +68,34 @@ export default function Home() {
   useEffect(() => {
     const fetchPopularMovies = async () => {
       if (!TMDB_API_KEY) {
-        // デモ用のサンプルデータ
-        setPopularMovies([
-          {
-            id: 1,
-            title: "サンプル映画 1",
-            overview: "これはデモ用のサンプル映画です。",
-            poster_path: null,
-            backdrop_path: null,
-            vote_average: 8.5,
-            media_type: "movie",
-          },
-        ]);
+        setError("TMDB APIキーが設定されていません。.env.localファイルにNEXT_PUBLIC_TMDB_API_KEYを設定してください。");
+        setPopularMovies([]);
         return;
       }
 
       setIsLoading(true);
+      setError(null);
       try {
         const response = await fetch(
           `https://api.themoviedb.org/3/movie/popular?api_key=${TMDB_API_KEY}&language=${apiLang}&region=JP`
         );
+
+        if (!response.ok) {
+          throw new Error(`API Error: ${response.status} ${response.statusText}`);
+        }
+
         const data = await response.json();
-        setPopularMovies(data.results?.slice(0, 20) || []);
+        
+        if (data.results && data.results.length > 0) {
+          setPopularMovies(data.results.slice(0, 20));
+        } else {
+          setPopularMovies([]);
+          setError("人気の映画が見つかりませんでした。");
+        }
       } catch (error) {
         console.error("Error fetching popular movies:", error);
+        setError(error instanceof Error ? error.message : "映画データの取得に失敗しました。");
+        setPopularMovies([]);
       } finally {
         setIsLoading(false);
       }
@@ -310,10 +315,27 @@ export default function Home() {
             {/* 検索 */}
             <MovieSearch onSelectMovie={handleSelectMovie} />
 
+            {/* エラーメッセージ */}
+            {error && (
+              <div className="rounded-lg border border-amber-400/50 bg-amber-400/10 p-4 text-amber-400">
+                <p className="font-medium">⚠️ {error}</p>
+                {!TMDB_API_KEY && (
+                  <p className="mt-2 text-sm">
+                    TMDB APIキーを取得するには、<a href="https://www.themoviedb.org/settings/api" target="_blank" rel="noopener noreferrer" className="underline">TMDBの設定ページ</a>からAPIキーを取得し、.env.localファイルに追加してください。
+                  </p>
+                )}
+              </div>
+            )}
+
             {/* 映画リスト */}
             {isLoading ? (
-              <div className="text-center text-zinc-400">{t.processing}</div>
-            ) : (
+              <div className="flex items-center justify-center py-12">
+                <div className="text-center">
+                  <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-zinc-700 border-t-amber-400"></div>
+                  <p className="text-zinc-400">{t.processing}</p>
+                </div>
+              </div>
+            ) : displayMovies.length > 0 ? (
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
                 {displayMovies.map((movie) => (
                   <button
@@ -337,12 +359,22 @@ export default function Home() {
                         <h3 className="text-sm font-semibold text-white">
                           {movie.title || movie.name}
                         </h3>
+                        {movie.vote_average > 0 && (
+                          <p className="mt-1 text-xs text-zinc-300">
+                            ⭐ {movie.vote_average.toFixed(1)}
+                          </p>
+                        )}
                       </div>
                     </div>
                   </button>
                 ))}
               </div>
-            )}
+            ) : !isLoading && !error ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <span className="mb-4 text-6xl">🎬</span>
+                <p className="text-zinc-400">映画が見つかりませんでした</p>
+              </div>
+            ) : null}
           </div>
         )}
       </main>

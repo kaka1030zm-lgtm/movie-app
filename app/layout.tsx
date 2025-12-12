@@ -15,6 +15,29 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "CineLog | Cinematic & Premium",
   description: "映画レビューアプリ - あなたの映画体験を記録・共有",
+  manifest: "/manifest.json",
+  themeColor: "#fbbf24",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "CineLog",
+  },
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+    viewportFit: "cover",
+  },
+  icons: {
+    icon: [
+      { url: "/icon.svg", sizes: "any", type: "image/svg+xml" },
+      { url: "/favicon.ico", sizes: "48x48", type: "image/x-icon" },
+    ],
+    apple: [
+      { url: "/icon.svg", sizes: "any", type: "image/svg+xml" },
+    ],
+  },
 };
 
 export default function RootLayout({

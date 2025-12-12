@@ -1,0 +1,23 @@
+{
+  "name": "CineLog - 映画レビューアプリ",
+  "short_name": "CineLog",
+  "description": "映画レビューアプリ - あなたの映画体験を記録・共有",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#fbbf24",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    }
+  ]
+}
