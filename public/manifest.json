@@ -2,6 +2,7 @@
   "name": "CineLog - 映画レビューアプリ",
   "short_name": "CineLog",
   "description": "映画レビューアプリ - あなたの映画体験を記録・共有",
+  "version": "1.0.0",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#000000",

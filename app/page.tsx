@@ -6,6 +6,7 @@ import MovieSearch from "./components/MovieSearch";
 import ReviewForm from "./components/ReviewForm";
 import MovieList from "./components/MovieList";
 import MovieDetailModal from "./components/MovieDetailModal";
+import UpdateChecker from "./components/UpdateChecker";
 import { useTranslation } from "./hooks/useTranslation";
 import { MovieSearchResult, ReviewRecord, WatchlistItem } from "./components/types";
 
@@ -416,6 +417,9 @@ export default function Home() {
           }}
         />
       )}
+
+      {/* 更新チェッカー */}
+      <UpdateChecker />
     </div>
   );
 }
