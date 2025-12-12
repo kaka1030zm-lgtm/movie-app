@@ -120,7 +120,7 @@ export default function WatchlistPage() {
   };
 
   return (
-    <div className="min-h-screen min-h-[100dvh] bg-[#121212] text-white">
+    <div className="min-h-screen min-h-[100dvh] bg-[#0a0a0a] text-white">
       <Header
         onSearchResults={() => {}}
         onQueryChange={() => {}}
