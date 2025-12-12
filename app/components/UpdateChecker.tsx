@@ -49,11 +49,11 @@ export default function UpdateChecker() {
 
   // 更新が検出されたら自動的にリロード
   useEffect(() => {
-    if (updateAvailable) {
+    if (updateAvailable && typeof window !== "undefined") {
       // 少し待ってからリロード（ユーザーに通知を表示する時間を確保）
       const timer = setTimeout(() => {
         // このアプリのキャッシュのみをクリア（同じオリジンのキャッシュのみ）
-        if (typeof window !== "undefined" && "caches" in window) {
+        if ("caches" in window) {
           caches.keys().then((names) => {
             // このアプリのドメインのキャッシュのみを削除
             // caches.keys()は既に同じオリジン（ドメイン）のキャッシュのみを返すため、
@@ -64,12 +64,10 @@ export default function UpdateChecker() {
               return caches.delete(name);
             });
             Promise.all(deletePromises).then(() => {
-              if (typeof window !== "undefined") {
-                window.location.reload();
-              }
+              window.location.reload();
             });
           });
-        } else if (typeof window !== "undefined") {
+        } else {
           window.location.reload();
         }
       }, 2000); // 2秒後に自動リロード
