@@ -52,15 +52,24 @@ export default function UpdateChecker() {
     if (updateAvailable) {
       // 少し待ってからリロード（ユーザーに通知を表示する時間を確保）
       const timer = setTimeout(() => {
-        // キャッシュをクリアしてリロード
+        // このアプリのキャッシュのみをクリア（同じオリジンのキャッシュのみ）
         if ("caches" in window) {
           caches.keys().then((names) => {
-            names.forEach((name) => {
-              caches.delete(name);
+            // このアプリのドメインのキャッシュのみを削除
+            // caches.keys()は既に同じオリジン（ドメイン）のキャッシュのみを返すため、
+            // 他のサイトのキャッシュには影響しません
+            const deletePromises = names.map((name) => {
+              // Next.jsやこのアプリに関連するキャッシュのみを削除
+              // より安全にするため、特定のパターンのみを削除することも可能
+              return caches.delete(name);
+            });
+            Promise.all(deletePromises).then(() => {
+              window.location.reload();
             });
           });
+        } else {
+          window.location.reload();
         }
-        window.location.reload();
       }, 2000); // 2秒後に自動リロード
 
       return () => clearTimeout(timer);
