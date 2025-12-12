@@ -47,17 +47,25 @@ export default function UpdateChecker() {
     return () => clearInterval(interval);
   }, []);
 
-  const handleReload = () => {
-    // キャッシュをクリアしてリロード
-    if ("caches" in window) {
-      caches.keys().then((names) => {
-        names.forEach((name) => {
-          caches.delete(name);
-        });
-      });
+  // 更新が検出されたら自動的にリロード
+  useEffect(() => {
+    if (updateAvailable) {
+      // 少し待ってからリロード（ユーザーに通知を表示する時間を確保）
+      const timer = setTimeout(() => {
+        // キャッシュをクリアしてリロード
+        if ("caches" in window) {
+          caches.keys().then((names) => {
+            names.forEach((name) => {
+              caches.delete(name);
+            });
+          });
+        }
+        window.location.reload();
+      }, 2000); // 2秒後に自動リロード
+
+      return () => clearTimeout(timer);
     }
-    window.location.reload();
-  };
+  }, [updateAvailable]);
 
   if (!updateAvailable) return null;
 
@@ -65,15 +73,10 @@ export default function UpdateChecker() {
     <div className="fixed bottom-4 left-4 right-4 z-50 mx-auto max-w-md rounded-lg border border-amber-400/50 bg-amber-400/10 p-4 shadow-lg">
       <div className="flex items-center justify-between">
         <div>
-          <p className="font-medium text-amber-400">新しいバージョンが利用可能です</p>
-          <p className="text-sm text-zinc-400">更新を適用しますか？</p>
+          <p className="font-medium text-amber-400">新しいバージョンを検出しました</p>
+          <p className="text-sm text-zinc-400">自動的に更新します...</p>
         </div>
-        <button
-          onClick={handleReload}
-          className="ml-4 rounded-lg bg-amber-400 px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-amber-300"
-        >
-          更新
-        </button>
+        <div className="ml-4 h-5 w-5 animate-spin rounded-full border-2 border-amber-400 border-t-transparent"></div>
       </div>
     </div>
   );
