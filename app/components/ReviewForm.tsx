@@ -1,298 +1,252 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, Star } from "lucide-react";
-import { useTranslation } from "../hooks/useTranslation";
-import { MovieSearchResult, ReviewRecord } from "./types";
+import { Star, Calendar, Film } from "lucide-react";
+import { MovieSearchResult } from "./types";
+import { ReviewInsert } from "../../types/database";
+import { format } from "date-fns";
+import { ja } from "date-fns/locale";
 
 interface ReviewFormProps {
   movie: MovieSearchResult | null;
-  existingReview?: ReviewRecord | null;
-  onSave: (review: Omit<ReviewRecord, "id" | "createdAt" | "updatedAt">) => void;
-  onClose: () => void;
-  onError?: (error: string) => void;
+  existingReview?: Review | null;
+  onSave: (review: ReviewInsert) => void;
+  onCancel: () => void;
 }
 
+const CRITERIA = [
+  { key: "plot", label: "ストーリー" },
+  { key: "acting", label: "演技" },
+  { key: "pacing", label: "テンポ" },
+  { key: "cinematography", label: "映像美" },
+  { key: "writing", label: "脚本" },
+  { key: "ending", label: "エンディング" },
+] as const;
+
 const PLATFORMS = [
-  { id: "netflix", name: "Netflix", logo: "/logos/netflix.png" },
-  { id: "prime", name: "Amazon Prime", logo: "/logos/prime.png" },
-  { id: "disney", name: "Disney+", logo: "/logos/disney.png" },
-  { id: "hulu", name: "Hulu", logo: "/logos/hulu.png" },
-  { id: "youtube", name: "YouTube", logo: "/logos/youtube.png" },
-  { id: "unext", name: "U-NEXT", logo: "/logos/unext.png" },
-  { id: "theater", name: "映画館", logo: "/logos/theater.png" },
+  "Netflix",
+  "Amazon Prime Video",
+  "Disney+",
+  "Hulu",
+  "U-NEXT",
+  "映画館",
+  "その他",
 ];
 
-export default function ReviewForm({ movie, existingReview, onSave, onClose, onError }: ReviewFormProps) {
-  const { t } = useTranslation();
-  const [reviewTitle, setReviewTitle] = useState(existingReview?.reviewTitle || "");
+export default function ReviewForm({ movie, existingReview, onSave, onCancel }: ReviewFormProps) {
+  const [overallRating, setOverallRating] = useState(existingReview?.overall_rating || 5);
+  const [criteriaRatings, setCriteriaRatings] = useState(
+    existingReview?.criteria_ratings || {
+      plot: 5,
+      acting: 5,
+      pacing: 5,
+      cinematography: 5,
+      writing: 5,
+      ending: 5,
+    }
+  );
+  const [reviewText, setReviewText] = useState(existingReview?.review_text || "");
+  const [watchedDate, setWatchedDate] = useState(
+    existingReview?.watched_date
+      ? format(new Date(existingReview.watched_date), "yyyy-MM-dd")
+      : format(new Date(), "yyyy-MM-dd")
+  );
   const [platform, setPlatform] = useState(existingReview?.platform || "");
-  const [story, setStory] = useState(existingReview?.story || 0);
-  const [acting, setActing] = useState(existingReview?.acting || 0);
-  const [visuals, setVisuals] = useState(existingReview?.visuals || 0);
-  const [music, setMusic] = useState(existingReview?.music || 0);
-  const [originality, setOriginality] = useState(existingReview?.originality || 0);
-  const [emotional, setEmotional] = useState(existingReview?.emotional || 0);
-  const [reviewBody, setReviewBody] = useState(existingReview?.reviewBody || "");
-  const [hoveredRating, setHoveredRating] = useState<{ [key: string]: number }>({});
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (existingReview) {
-      setReviewTitle(existingReview.reviewTitle || "");
-      setPlatform(existingReview.platform);
-      setStory(existingReview.story);
-      setActing(existingReview.acting);
-      setVisuals(existingReview.visuals);
-      setMusic(existingReview.music);
-      setOriginality(existingReview.originality);
-      setEmotional(existingReview.emotional);
-      setReviewBody(existingReview.reviewBody);
-    }
-  }, [existingReview]);
-
-  // バリデーション
-  const validate = (): boolean => {
-    const newErrors: { [key: string]: string } = {};
-
-    if (!reviewTitle.trim()) {
-      newErrors.reviewTitle = "レビューのタイトルを入力してください";
-    }
-
-    if (!reviewBody.trim()) {
-      newErrors.reviewBody = "レビュー本文を入力してください";
-    }
-
-    if (story === 0 && acting === 0 && visuals === 0 && music === 0 && originality === 0 && emotional === 0) {
-      newErrors.rating = "少なくとも1つの評価項目に1つ以上の星を付けてください";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!movie) return;
-
-    if (!validate()) {
-      if (onError) {
-        onError("入力内容を確認してください");
-      }
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      // 簡易的な認証チェック（localStorageからユーザーIDを取得）
-      let userId = "";
-      if (typeof window !== "undefined") {
-        userId = localStorage.getItem("cinelog_userId") || `user_${Date.now()}`;
-        localStorage.setItem("cinelog_userId", userId);
-      }
-
-      // APIリクエスト（将来的な実装を考慮）
-      // 現在は直接onSaveを呼び出す
-      onSave({
-        movieId: movie.id,
-        title: movie.title || movie.name || "",
-        originalTitle: movie.original_title || movie.original_name,
-        posterPath: movie.poster_path,
-        backdropPath: movie.backdrop_path,
-        releaseDate: movie.release_date || movie.first_air_date,
-        mediaType: movie.media_type || (movie.name ? "tv" : "movie"),
-        platform,
-        reviewTitle: reviewTitle.trim(),
-        story,
-        acting,
-        visuals,
-        music,
-        originality,
-        emotional,
-        reviewBody: reviewBody.trim(),
-        userId,
+      // 既存レビューを編集する場合
+      setOverallRating(existingReview.overall_rating);
+      setCriteriaRatings(existingReview.criteria_ratings);
+      setReviewText(existingReview.review_text || "");
+      setWatchedDate(
+        existingReview.watched_date
+          ? format(new Date(existingReview.watched_date), "yyyy-MM-dd")
+          : format(new Date(), "yyyy-MM-dd")
+      );
+      setPlatform(existingReview.platform || "");
+    } else if (movie) {
+      // 新しい映画が選択されたらフォームをリセット
+      setOverallRating(5);
+      setCriteriaRatings({
+        plot: 5,
+        acting: 5,
+        pacing: 5,
+        cinematography: 5,
+        writing: 5,
+        ending: 5,
       });
-    } catch (error) {
-      console.error("Error saving review:", error);
-      if (onError) {
-        onError("投稿に失敗しました。時間をおいてお試しください。");
-      }
-    } finally {
-      setIsSubmitting(false);
+      setReviewText("");
+      setWatchedDate(format(new Date(), "yyyy-MM-dd"));
+      setPlatform("");
     }
-  };
-
-  const RatingInput = ({
-    label,
-    value,
-    onChange,
-    fieldName,
-  }: {
-    label: string;
-    value: number;
-    onChange: (value: number) => void;
-    fieldName: string;
-  }) => {
-    const hoveredValue = hoveredRating[fieldName] || value;
-
-    return (
-      <div className="space-y-2">
-        <label className="text-sm font-medium text-zinc-300">{label}</label>
-        <div className="flex items-center gap-2">
-          {[1, 2, 3, 4, 5].map((rating) => (
-            <button
-              key={rating}
-              type="button"
-              onClick={() => onChange(rating)}
-              onMouseEnter={() => setHoveredRating({ ...hoveredRating, [fieldName]: rating })}
-              onMouseLeave={() => setHoveredRating({ ...hoveredRating, [fieldName]: 0 })}
-              className="transition-transform hover:scale-110"
-            >
-              <Star
-                className={`h-6 w-6 transition-colors ${
-                  rating <= hoveredValue
-                    ? "fill-yellow-500 text-yellow-500"
-                    : rating <= value
-                    ? "fill-amber-400 text-amber-400"
-                    : "text-zinc-600"
-                }`}
-              />
-            </button>
-          ))}
-          <span className="ml-2 text-sm text-zinc-400">{value}/5</span>
-        </div>
-      </div>
-    );
-  };
+  }, [movie, existingReview]);
 
   if (!movie) return null;
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const review: ReviewInsert = {
+      movie_id: movie.id,
+      title: movie.title,
+      poster_path: movie.poster_path,
+      overall_rating: overallRating,
+      criteria_ratings: criteriaRatings,
+      review_text: reviewText || null,
+      watched_date: watchedDate || null,
+      platform: platform || null,
+    };
+
+    onSave(review);
+  };
+
+  const updateCriteriaRating = (key: keyof typeof criteriaRatings, value: number) => {
+    setCriteriaRatings((prev) => ({ ...prev, [key]: value }));
+  };
+
   return (
-    <div className="w-full">
+    <div className="rounded-lg border border-[#1a1a1a] bg-[#0a0a0a] p-6">
       <div className="mb-6 flex items-center gap-4">
         {movie.poster_path ? (
           <img
             src={`https://image.tmdb.org/t/p/w154${movie.poster_path}`}
-            alt={movie.title || movie.name}
-            className="h-24 w-16 rounded object-cover"
+            alt={movie.title}
+            className="h-32 w-24 object-cover rounded"
           />
         ) : (
-          <div className="flex h-24 w-16 items-center justify-center rounded bg-zinc-800">
-            <span className="text-2xl">🎬</span>
+          <div className="h-32 w-24 bg-[#1a1a1a] rounded flex items-center justify-center">
+            <Film className="h-12 w-12 text-gray-600" />
           </div>
         )}
         <div>
-          <h2 className="text-xl font-bold text-white">{movie.title || movie.name}</h2>
-          <p className="text-sm text-gray-400">
-            {movie.release_date || movie.first_air_date || ""}
-          </p>
+          <h2 className="text-2xl font-bold text-white mb-1">{movie.title}</h2>
+          {movie.release_date && (
+            <p className="text-gray-400">{movie.release_date}</p>
+          )}
         </div>
+      </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-          {/* レビュータイトル */}
-          <div>
-            <label className="mb-2 block text-sm font-medium text-zinc-300">
-              レビュータイトル <span className="text-red-400">*</span>
-            </label>
-            <input
-              type="text"
-              value={reviewTitle}
-              onChange={(e) => {
-                setReviewTitle(e.target.value);
-                if (errors.reviewTitle) {
-                  setErrors({ ...errors, reviewTitle: "" });
-                }
-              }}
-              placeholder="例: 感動的な作品でした"
-              className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 p-3 text-white placeholder-zinc-500 focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400/20"
-            />
-            {errors.reviewTitle && (
-              <p className="mt-1 text-sm text-red-400">{errors.reviewTitle}</p>
-            )}
-          </div>
-
-          <div>
-            <label className="mb-2 block text-sm font-medium text-zinc-300">
-              {t.platform}
-            </label>
-            <div className="grid grid-cols-4 gap-2 sm:grid-cols-7">
-              {PLATFORMS.map((p) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => setPlatform(p.id)}
-                  className={`flex flex-col items-center gap-1 rounded-lg border p-2 transition-colors ${
-                    platform === p.id
-                      ? "border-amber-400 bg-amber-400/10"
-                      : "border-zinc-700 bg-zinc-800/50 hover:border-zinc-600"
+        {/* 総合評価 */}
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-3">
+            総合評価
+          </label>
+          <div className="flex items-center gap-2">
+            {[1, 2, 3, 4, 5].map((rating) => (
+              <button
+                key={rating}
+                type="button"
+                onClick={() => setOverallRating(rating)}
+                className="transition-transform hover:scale-110"
+              >
+                <Star
+                  className={`h-8 w-8 ${
+                    rating <= overallRating
+                      ? "fill-[#D4AF37] text-[#D4AF37]"
+                      : "text-gray-600"
                   }`}
-                >
-                  <img src={p.logo} alt={p.name} className="h-6 w-6 object-contain" />
-                  <span className="text-xs text-zinc-300">{p.name}</span>
-                </button>
-              ))}
-            </div>
+                />
+              </button>
+            ))}
+            <span className="ml-4 text-lg font-semibold text-[#D4AF37]">
+              {overallRating}/5
+            </span>
           </div>
+        </div>
 
-          <div className="space-y-4">
-            {errors.rating && (
-              <p className="text-sm text-red-400">{errors.rating}</p>
-            )}
-            <RatingInput label={t.story} value={story} onChange={setStory} fieldName="story" />
-            <RatingInput label={t.acting} value={acting} onChange={setActing} fieldName="acting" />
-            <RatingInput label={t.visuals} value={visuals} onChange={setVisuals} fieldName="visuals" />
-            <RatingInput label={t.music} value={music} onChange={setMusic} fieldName="music" />
-            <RatingInput
-              label={t.originality}
-              value={originality}
-              onChange={setOriginality}
-              fieldName="originality"
-            />
-            <RatingInput label={t.emotional} value={emotional} onChange={setEmotional} fieldName="emotional" />
-          </div>
-
-          <div>
-            <label className="mb-2 block text-sm font-medium text-zinc-300">
-              {t.reviewBody} <span className="text-red-400">*</span>
-            </label>
-            <textarea
-              value={reviewBody}
-              onChange={(e) => {
-                setReviewBody(e.target.value);
-                if (errors.reviewBody) {
-                  setErrors({ ...errors, reviewBody: "" });
+        {/* 各項目の評価（スライダー） */}
+        <div className="space-y-4">
+          <label className="block text-sm font-medium text-gray-300 mb-3">
+            詳細評価（1-10点）
+          </label>
+          {CRITERIA.map((criterion) => (
+            <div key={criterion.key}>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-gray-300">{criterion.label}</span>
+                <span className="text-sm font-semibold text-[#D4AF37]">
+                  {criteriaRatings[criterion.key]}/10
+                </span>
+              </div>
+              <input
+                type="range"
+                min="1"
+                max="10"
+                value={criteriaRatings[criterion.key]}
+                onChange={(e) =>
+                  updateCriteriaRating(criterion.key, parseInt(e.target.value))
                 }
-              }}
-              placeholder={t.placeholderBody}
-              rows={6}
-              className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 p-3 text-white placeholder-zinc-500 focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400/20"
-            />
-            {errors.reviewBody && (
-              <p className="mt-1 text-sm text-red-400">{errors.reviewBody}</p>
-            )}
-          </div>
+                className="w-full h-2 bg-[#1a1a1a] rounded-lg appearance-none cursor-pointer accent-[#D4AF37]"
+              />
+            </div>
+          ))}
+        </div>
 
-          <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 rounded-lg border border-zinc-700 bg-zinc-800/50 px-4 py-2 text-white transition-colors hover:bg-zinc-700"
-            >
-              {t.cancel}
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="flex-1 rounded-lg bg-amber-400 px-4 py-2 font-medium text-black transition-colors hover:bg-amber-300 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isSubmitting ? "送信中..." : existingReview ? t.update : t.save}
-            </button>
-          </div>
-        </form>
-      </div>
+        {/* 視聴日 */}
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-2">
+            <Calendar className="inline h-4 w-4 mr-1" />
+            視聴日
+          </label>
+          <input
+            type="date"
+            value={watchedDate}
+            onChange={(e) => setWatchedDate(e.target.value)}
+            className="w-full rounded-lg border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-2 text-white focus:border-[#D4AF37] focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/20"
+          />
+        </div>
+
+        {/* プラットフォーム */}
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-2">
+            視聴プラットフォーム
+          </label>
+          <select
+            value={platform}
+            onChange={(e) => setPlatform(e.target.value)}
+            className="w-full rounded-lg border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-2 text-white focus:border-[#D4AF37] focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/20"
+          >
+            <option value="">選択してください</option>
+            {PLATFORMS.map((p) => (
+              <option key={p} value={p}>
+                {p}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* レビューテキスト */}
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-2">
+            レビュー本文
+          </label>
+          <textarea
+            value={reviewText}
+            onChange={(e) => setReviewText(e.target.value)}
+            rows={6}
+            placeholder="この映画についての感想を書いてください..."
+            className="w-full rounded-lg border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3 text-white placeholder-gray-500 focus:border-[#D4AF37] focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/20 resize-none"
+          />
+        </div>
+
+        {/* ボタン */}
+        <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="flex-1 rounded-lg border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3 text-white hover:bg-[#1a1a1a] transition-colors"
+          >
+            キャンセル
+          </button>
+          <button
+            type="submit"
+            className="flex-1 rounded-lg bg-[#D4AF37] px-4 py-3 text-black font-semibold hover:bg-[#B8941F] transition-colors"
+          >
+            保存
+          </button>
+        </div>
+      </form>
     </div>
   );
 }
-
