@@ -9,6 +9,9 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@remix-run/dev": "2.5.1",
+    "@remix-run/node": "2.5.1",
+    "@remix-run/react": "2.5.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "lucide-react": "^0.560.0",
