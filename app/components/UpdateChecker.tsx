@@ -58,23 +58,21 @@ export default function UpdateChecker() {
         }
 
         // windowを変数に保存して型を保持
-        const win = window;
+        const win: Window = window;
 
         // このアプリのキャッシュのみをクリア（同じオリジンのキャッシュのみ）
-        if ("caches" in win) {
-          caches.keys().then((names) => {
+        if ("caches" in win && win.caches) {
+          win.caches.keys().then((names) => {
             // このアプリのドメインのキャッシュのみを削除
             // caches.keys()は既に同じオリジン（ドメイン）のキャッシュのみを返すため、
             // 他のサイトのキャッシュには影響しません
             const deletePromises = names.map((name) => {
               // Next.jsやこのアプリに関連するキャッシュのみを削除
               // より安全にするため、特定のパターンのみを削除することも可能
-              return caches.delete(name);
+              return win.caches.delete(name);
             });
             Promise.all(deletePromises).then(() => {
-              if (typeof win !== "undefined") {
-                win.location.reload();
-              }
+              win.location.reload();
             });
           });
         } else {
