@@ -297,7 +297,7 @@ export default function Home() {
       <main className="max-w-7xl mx-auto px-4 py-10 sm:px-6 lg:px-8">
         {/* 人気/おすすめ映画カルーセル（検索結果がない場合のみ表示、検索バー直下） */}
         {!searchQuery.trim() && activeTab === "popular" && (
-          <div className="mb-8">
+          <div className="mt-10 mb-8">
             {popularMovies.length > 0 && (
               <MovieCarousel
                 title="🔥 人気映画"
