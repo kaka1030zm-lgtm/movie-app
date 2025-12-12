@@ -64,59 +64,57 @@ export default function MovieList({
         reviews.map((review) => (
           <div
             key={review.id}
-            className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm transition-all duration-500 premium-hover"
+            className="group relative overflow-hidden rounded-lg border border-zinc-800 bg-zinc-900/50 transition-all hover:border-zinc-700"
           >
-            <div className="flex gap-5 p-5">
+            <div className="flex gap-4 p-4">
               {review.posterPath ? (
-                <div className="relative h-36 w-28 flex-shrink-0 rounded-xl overflow-hidden border border-white/10 shadow-lg">
-                  <img
-                    src={`https://image.tmdb.org/t/p/w154${review.posterPath}`}
-                    alt={review.title}
-                    className="h-full w-full object-cover"
-                  />
-                </div>
+                <img
+                  src={`https://image.tmdb.org/t/p/w154${review.posterPath}`}
+                  alt={review.title}
+                  className="h-32 w-24 flex-shrink-0 rounded object-cover"
+                />
               ) : (
-                <div className="flex h-36 w-28 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border border-white/10">
-                  <Film className="h-10 w-10 text-white/10" />
+                <div className="flex h-32 w-24 flex-shrink-0 items-center justify-center rounded bg-zinc-800">
+                  <Film className="h-8 w-8 text-zinc-600" />
                 </div>
               )}
               <div className="flex-1 min-w-0">
-                <div className="mb-3 flex items-start justify-between">
+                <div className="mb-2 flex items-start justify-between">
                   <div>
-                    <h3 className="text-lg font-bold text-white mb-1">{review.title}</h3>
-                    <p className="text-sm text-white/50 font-medium">{review.releaseDate}</p>
+                    <h3 className="text-lg font-semibold text-white">{review.title}</h3>
+                    <p className="text-sm text-zinc-400">{review.releaseDate}</p>
                   </div>
                   <div className="flex gap-2">
                     <button
                       onClick={() => onEditReview(review)}
-                      className="rounded-xl p-2.5 text-white/50 hover:text-white hover:bg-white/10 transition-all duration-300 border border-white/10 hover:border-white/20"
+                      className="rounded p-2 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white"
                     >
                       <Edit className="h-4 w-4" />
                     </button>
                     <button
                       onClick={() => handleDeleteClick(review.id)}
-                      className="rounded-xl p-2.5 text-white/50 hover:text-red-400 hover:bg-red-500/10 transition-all duration-300 border border-white/10 hover:border-red-500/20"
+                      className="rounded p-2 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-red-400"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
                   </div>
                 </div>
-                <div className="mb-3 flex flex-wrap gap-2 text-xs">
-                  <span className="rounded-lg bg-white/5 border border-white/10 px-3 py-1.5 text-white/70 font-medium">
+                <div className="mb-2 flex flex-wrap gap-2 text-xs">
+                  <span className="rounded bg-zinc-800 px-2 py-1 text-zinc-300">
                     {t.story}: {review.story}/5
                   </span>
-                  <span className="rounded-lg bg-white/5 border border-white/10 px-3 py-1.5 text-white/70 font-medium">
+                  <span className="rounded bg-zinc-800 px-2 py-1 text-zinc-300">
                     {t.acting}: {review.acting}/5
                   </span>
-                  <span className="rounded-lg bg-white/5 border border-white/10 px-3 py-1.5 text-white/70 font-medium">
+                  <span className="rounded bg-zinc-800 px-2 py-1 text-zinc-300">
                     {t.visuals}: {review.visuals}/5
                   </span>
-                  <span className="rounded-lg bg-white/5 border border-white/10 px-3 py-1.5 text-white/70 font-medium">
+                  <span className="rounded bg-zinc-800 px-2 py-1 text-zinc-300">
                     {t.music}: {review.music}/5
                   </span>
                 </div>
                 {review.reviewBody && (
-                  <p className="line-clamp-2 text-sm text-white/60 leading-relaxed">{review.reviewBody}</p>
+                  <p className="line-clamp-2 text-sm text-zinc-300">{review.reviewBody}</p>
                 )}
               </div>
             </div>
@@ -126,38 +124,36 @@ export default function MovieList({
         watchlist.map((item) => (
           <div
             key={item.id}
-            className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm transition-all duration-500 premium-hover"
+            className="group relative overflow-hidden rounded-lg border border-zinc-800 bg-zinc-900/50 transition-all hover:border-zinc-700"
           >
-            <div className="flex gap-5 p-5">
+            <div className="flex gap-4 p-4">
               {item.posterPath ? (
-                <div className="relative h-36 w-28 flex-shrink-0 rounded-xl overflow-hidden border border-white/10 shadow-lg">
-                  <img
-                    src={`https://image.tmdb.org/t/p/w154${item.posterPath}`}
-                    alt={item.title}
-                    className="h-full w-full object-cover"
-                  />
-                </div>
+                <img
+                  src={`https://image.tmdb.org/t/p/w154${item.posterPath}`}
+                  alt={item.title}
+                  className="h-32 w-24 flex-shrink-0 rounded object-cover"
+                />
               ) : (
-                <div className="flex h-36 w-28 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border border-white/10">
-                  <Film className="h-10 w-10 text-white/10" />
+                <div className="flex h-32 w-24 flex-shrink-0 items-center justify-center rounded bg-zinc-800">
+                  <Film className="h-8 w-8 text-zinc-600" />
                 </div>
               )}
               <div className="flex flex-1 items-center justify-between">
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-lg font-bold text-white mb-1">{item.title}</h3>
-                  <p className="text-sm text-white/50 font-medium">{item.releaseDate}</p>
+                  <h3 className="text-lg font-semibold text-white">{item.title}</h3>
+                  <p className="text-sm text-zinc-400">{item.releaseDate}</p>
                 </div>
-                <div className="flex gap-3">
+                <div className="flex gap-2">
                   <button
                     onClick={() => onAddReview(item)}
-                    className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#d4af37] to-[#f4d03f] px-5 py-2.5 text-sm font-semibold text-black transition-all duration-300 hover:from-[#f4d03f] hover:to-[#d4af37] shadow-lg shadow-[#d4af37]/20 hover:shadow-[#d4af37]/30 hover:scale-105"
+                    className="flex items-center gap-2 rounded-lg bg-amber-400 px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-amber-300"
                   >
                     <Plus className="h-4 w-4" />
                     {t.writeReview}
                   </button>
                   <button
                     onClick={() => handleDeleteClick(item.id)}
-                    className="rounded-xl p-2.5 text-white/50 hover:text-red-400 hover:bg-red-500/10 transition-all duration-300 border border-white/10 hover:border-red-500/20"
+                    className="rounded p-2 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-red-400"
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
@@ -169,21 +165,21 @@ export default function MovieList({
       )}
 
       {deleteConfirmId !== null && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-xl p-4">
-          <div className="w-full max-w-md rounded-3xl glass shadow-2xl p-8 scale-in">
-            <h3 className="mb-6 text-xl font-bold text-white">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
+          <div className="w-full max-w-md rounded-lg border border-zinc-800 bg-zinc-900 p-6">
+            <h3 className="mb-4 text-lg font-semibold text-white">
               {activeTab === "reviews" ? t.confirmDeleteReview : t.confirmDeleteWatchlist}
             </h3>
-            <div className="flex gap-4">
+            <div className="flex gap-3">
               <button
                 onClick={handleDeleteCancel}
-                className="flex-1 rounded-xl border border-white/20 bg-white/5 px-6 py-3.5 font-semibold text-white hover:bg-white/10 hover:border-white/30 transition-all duration-300"
+                className="flex-1 rounded-lg border border-zinc-700 bg-zinc-800/50 px-4 py-2 text-white transition-colors hover:bg-zinc-700"
               >
                 {t.cancel}
               </button>
               <button
                 onClick={handleDeleteConfirm}
-                className="flex-1 rounded-xl bg-red-500/90 px-6 py-3.5 font-semibold text-white transition-all duration-300 hover:bg-red-500 hover:scale-105 shadow-lg shadow-red-500/20"
+                className="flex-1 rounded-lg bg-red-600 px-4 py-2 font-medium text-white transition-colors hover:bg-red-700"
               >
                 {t.delete}
               </button>

@@ -570,7 +570,7 @@ export default function Home() {
   }, [activeTab, recommendedMovies, searchQuery, searchResults]);
 
   return (
-    <div className="min-h-screen min-h-[100dvh] bg-[#0a0a0a] text-white">
+    <div className="min-h-screen min-h-[100dvh] bg-[#121212] text-white">
       <Header
         onSearchResults={(results) => {
           setSearchResults(results);
@@ -658,58 +658,46 @@ export default function Home() {
         )}
 
         {/* タブ */}
-        <div className="mb-10 flex flex-wrap gap-1 border-b border-white/10">
+        <div className="mb-8 flex flex-wrap gap-2 border-b border-zinc-800">
           <button
             onClick={() => setActiveTab("popular")}
-            className={`px-6 py-3 font-semibold text-sm transition-all duration-300 relative ${
+            className={`px-4 py-2 font-medium transition-colors ${
               activeTab === "popular"
-                ? "text-white"
-                : "text-white/50 hover:text-white/80"
+                ? "border-b-2 border-amber-400 text-amber-400"
+                : "text-zinc-400 hover:text-white"
             }`}
           >
             {t.popular}
-            {activeTab === "popular" && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#d4af37] to-[#f4d03f]"></span>
-            )}
           </button>
           <button
             onClick={() => setActiveTab("recommended")}
-            className={`px-6 py-3 font-semibold text-sm transition-all duration-300 relative ${
+            className={`px-4 py-2 font-medium transition-colors ${
               activeTab === "recommended"
-                ? "text-white"
-                : "text-white/50 hover:text-white/80"
+                ? "border-b-2 border-amber-400 text-amber-400"
+                : "text-zinc-400 hover:text-white"
             }`}
           >
             {t.recommended}
-            {activeTab === "recommended" && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#d4af37] to-[#f4d03f]"></span>
-            )}
           </button>
           <button
             onClick={() => setActiveTab("reviews")}
-            className={`px-6 py-3 font-semibold text-sm transition-all duration-300 relative ${
+            className={`px-4 py-2 font-medium transition-colors ${
               activeTab === "reviews"
-                ? "text-white"
-                : "text-white/50 hover:text-white/80"
+                ? "border-b-2 border-amber-400 text-amber-400"
+                : "text-zinc-400 hover:text-white"
             }`}
           >
             {t.myReviews}
-            {activeTab === "reviews" && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#d4af37] to-[#f4d03f]"></span>
-            )}
           </button>
           <button
             onClick={() => setActiveTab("watchlist")}
-            className={`px-6 py-3 font-semibold text-sm transition-all duration-300 relative ${
+            className={`px-4 py-2 font-medium transition-colors ${
               activeTab === "watchlist"
-                ? "text-white"
-                : "text-white/50 hover:text-white/80"
+                ? "border-b-2 border-amber-400 text-amber-400"
+                : "text-zinc-400 hover:text-white"
             }`}
           >
             {t.watchlist}
-            {activeTab === "watchlist" && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#d4af37] to-[#f4d03f]"></span>
-            )}
           </button>
         </div>
 
@@ -729,22 +717,20 @@ export default function Home() {
 
             {/* 検索結果タイトル */}
             {searchQuery.trim() && (
-              <div className="mb-6">
-                <h2 className="text-2xl font-bold text-white tracking-tight">
-                  {t.searchResults} {searchResults.length > 0 && (
-                    <span className="text-white/50 font-normal">({searchResults.length})</span>
-                  )}
+              <div className="mb-4">
+                <h2 className="text-xl font-semibold text-white">
+                  {t.searchResults} {searchResults.length > 0 && `(${searchResults.length})`}
                 </h2>
               </div>
             )}
 
             {/* エラーメッセージ */}
             {error && (
-              <div className="rounded-2xl border border-white/20 bg-white/5 backdrop-blur-xl p-5 text-white/90 mb-6">
-                <p className="font-semibold mb-2">⚠️ {error}</p>
+              <div className="rounded-lg border border-amber-400/50 bg-amber-400/10 p-4 text-amber-400">
+                <p className="font-medium">⚠️ {error}</p>
                 {!TMDB_API_KEY && (
-                  <p className="mt-2 text-sm text-white/60">
-                    TMDB APIキーを取得するには、<a href="https://www.themoviedb.org/settings/api" target="_blank" rel="noopener noreferrer" className="text-[#d4af37] hover:text-[#f4d03f] underline transition-colors">TMDBの設定ページ</a>からAPIキーを取得し、.env.localファイルに追加してください。
+                  <p className="mt-2 text-sm">
+                    TMDB APIキーを取得するには、<a href="https://www.themoviedb.org/settings/api" target="_blank" rel="noopener noreferrer" className="underline">TMDBの設定ページ</a>からAPIキーを取得し、.env.localファイルに追加してください。
                   </p>
                 )}
               </div>

@@ -138,9 +138,9 @@ export default function ReviewForm({ movie, existingReview, onSave, onClose, onE
     const hoveredValue = hoveredRating[fieldName] || value;
 
     return (
-      <div className="space-y-3">
-        <label className="text-sm font-semibold text-white/90">{label}</label>
-        <div className="flex items-center gap-3">
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-zinc-300">{label}</label>
+        <div className="flex items-center gap-2">
           {[1, 2, 3, 4, 5].map((rating) => (
             <button
               key={rating}
@@ -148,20 +148,20 @@ export default function ReviewForm({ movie, existingReview, onSave, onClose, onE
               onClick={() => onChange(rating)}
               onMouseEnter={() => setHoveredRating({ ...hoveredRating, [fieldName]: rating })}
               onMouseLeave={() => setHoveredRating({ ...hoveredRating, [fieldName]: 0 })}
-              className="transition-all duration-300 hover:scale-125 active:scale-95"
+              className="transition-transform hover:scale-110"
             >
               <Star
-                className={`h-7 w-7 transition-all duration-300 ${
+                className={`h-6 w-6 transition-colors ${
                   rating <= hoveredValue
-                    ? "fill-[#d4af37] text-[#d4af37] drop-shadow-lg"
+                    ? "fill-yellow-500 text-yellow-500"
                     : rating <= value
-                    ? "fill-[#d4af37]/80 text-[#d4af37]/80"
-                    : "text-white/20"
+                    ? "fill-amber-400 text-amber-400"
+                    : "text-zinc-600"
                 }`}
               />
             </button>
           ))}
-          <span className="ml-3 text-sm font-semibold text-white/60">{value}/5</span>
+          <span className="ml-2 text-sm text-zinc-400">{value}/5</span>
         </div>
       </div>
     );
@@ -170,14 +170,26 @@ export default function ReviewForm({ movie, existingReview, onSave, onClose, onE
   if (!movie) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-xl p-4">
-      <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl glass shadow-2xl p-8 scale-in">
-        <button
-          onClick={onClose}
-          className="absolute right-5 top-5 rounded-full p-2.5 text-white/50 hover:text-white hover:bg-white/10 transition-all duration-300 backdrop-blur-sm border border-white/10 hover:border-white/20"
-        >
-          <X className="h-5 w-5" />
-        </button>
+    <div className="w-full">
+      <div className="mb-6 flex items-center gap-4">
+        {movie.poster_path ? (
+          <img
+            src={`https://image.tmdb.org/t/p/w154${movie.poster_path}`}
+            alt={movie.title || movie.name}
+            className="h-24 w-16 rounded object-cover"
+          />
+        ) : (
+          <div className="flex h-24 w-16 items-center justify-center rounded bg-zinc-800">
+            <span className="text-2xl">🎬</span>
+          </div>
+        )}
+        <div>
+          <h2 className="text-xl font-bold text-white">{movie.title || movie.name}</h2>
+          <p className="text-sm text-gray-400">
+            {movie.release_date || movie.first_air_date || ""}
+          </p>
+        </div>
+      </div>
 
         <div className="mb-8 flex items-center gap-5 pb-6 border-b border-white/10">
           {movie.poster_path ? (
@@ -201,11 +213,11 @@ export default function ReviewForm({ movie, existingReview, onSave, onClose, onE
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-8">
+        <form onSubmit={handleSubmit} className="space-y-6">
           {/* レビュータイトル */}
           <div>
-            <label className="mb-3 block text-sm font-semibold text-white/90">
-              レビュータイトル <span className="text-[#d4af37]">*</span>
+            <label className="mb-2 block text-sm font-medium text-zinc-300">
+              レビュータイトル <span className="text-red-400">*</span>
             </label>
             <input
               type="text"
@@ -217,10 +229,10 @@ export default function ReviewForm({ movie, existingReview, onSave, onClose, onE
                 }
               }}
               placeholder="例: 感動的な作品でした"
-              className="w-full rounded-xl border border-white/10 bg-white/5 p-4 text-white placeholder-white/30 focus:border-[#d4af37]/50 focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 focus:bg-white/10 transition-all duration-300"
+              className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 p-3 text-white placeholder-zinc-500 focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400/20"
             />
             {errors.reviewTitle && (
-              <p className="mt-2 text-sm text-red-400/80">{errors.reviewTitle}</p>
+              <p className="mt-1 text-sm text-red-400">{errors.reviewTitle}</p>
             )}
           </div>
 
@@ -265,8 +277,8 @@ export default function ReviewForm({ movie, existingReview, onSave, onClose, onE
           </div>
 
           <div>
-            <label className="mb-3 block text-sm font-semibold text-white/90">
-              {t.reviewBody} <span className="text-[#d4af37]">*</span>
+            <label className="mb-2 block text-sm font-medium text-zinc-300">
+              {t.reviewBody} <span className="text-red-400">*</span>
             </label>
             <textarea
               value={reviewBody}
@@ -278,25 +290,25 @@ export default function ReviewForm({ movie, existingReview, onSave, onClose, onE
               }}
               placeholder={t.placeholderBody}
               rows={6}
-              className="w-full rounded-xl border border-white/10 bg-white/5 p-4 text-white placeholder-white/30 focus:border-[#d4af37]/50 focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 focus:bg-white/10 transition-all duration-300 resize-none"
+              className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 p-3 text-white placeholder-zinc-500 focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400/20"
             />
             {errors.reviewBody && (
-              <p className="mt-2 text-sm text-red-400/80">{errors.reviewBody}</p>
+              <p className="mt-1 text-sm text-red-400">{errors.reviewBody}</p>
             )}
           </div>
 
-          <div className="flex gap-4 pt-4">
+          <div className="flex gap-3">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 rounded-xl border border-white/20 bg-white/5 px-6 py-3.5 font-semibold text-white hover:bg-white/10 hover:border-white/30 transition-all duration-300"
+              className="flex-1 rounded-lg border border-zinc-700 bg-zinc-800/50 px-4 py-2 text-white transition-colors hover:bg-zinc-700"
             >
               {t.cancel}
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 rounded-xl bg-gradient-to-r from-[#d4af37] to-[#f4d03f] px-6 py-3.5 font-semibold text-black transition-all duration-300 hover:from-[#f4d03f] hover:to-[#d4af37] shadow-lg shadow-[#d4af37]/20 hover:shadow-[#d4af37]/30 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+              className="flex-1 rounded-lg bg-amber-400 px-4 py-2 font-medium text-black transition-colors hover:bg-amber-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? "送信中..." : existingReview ? t.update : t.save}
             </button>

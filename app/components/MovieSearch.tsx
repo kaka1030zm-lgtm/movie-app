@@ -204,7 +204,7 @@ export default function MovieSearch({
   return (
     <div className="w-full max-w-xl relative">
       <div className="relative">
-        <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-white/40 pointer-events-none transition-colors duration-300" />
+        <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400 pointer-events-none" />
         <input
           ref={inputRef}
           type="text"
@@ -213,7 +213,7 @@ export default function MovieSearch({
           onFocus={() => setShowHistory(searchHistory.length > 0)}
           onKeyDown={handleKeyDown}
           placeholder="映画タイトルを検索..."
-          className="w-full rounded-full bg-white/5 border border-white/10 py-3.5 pl-12 pr-10 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-[#d4af37]/50 focus:border-[#d4af37]/50 focus:bg-white/10 transition-all duration-300 backdrop-blur-sm"
+          className="w-full rounded-full bg-gray-700 border border-gray-600 py-3 pl-12 pr-10 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition-all"
         />
         {query && (
           <button
@@ -235,26 +235,26 @@ export default function MovieSearch({
       {showHistory && searchHistory.length > 0 && (
         <div
           ref={historyRef}
-          className="absolute top-full left-0 right-0 mt-3 rounded-2xl glass shadow-2xl z-50 max-h-60 overflow-y-auto scale-in"
+          className="absolute top-full left-0 right-0 mt-2 rounded-lg border border-gray-600 bg-gray-800 shadow-lg z-50 max-h-60 overflow-y-auto"
         >
           <div className="p-2">
-            <div className="text-xs text-white/40 px-4 py-2.5 mb-1 font-medium tracking-wide uppercase">最近の検索</div>
+            <div className="text-xs text-gray-400 px-3 py-2 mb-1">最近の検索</div>
             {searchHistory.map((item, index) => (
               <button
                 key={index}
                 onClick={() => handleHistoryClick(item)}
-                className="w-full flex items-center justify-between px-4 py-3 text-left text-sm text-white/90 hover:text-white hover:bg-white/5 rounded-xl transition-all duration-200 group"
+                className="w-full flex items-center justify-between px-3 py-2 text-left text-sm text-white hover:bg-gray-700 rounded transition-colors group"
               >
-                <span className="flex items-center gap-3">
-                  <Search className="h-4 w-4 text-white/30 group-hover:text-[#d4af37] transition-colors" />
+                <span className="flex items-center gap-2">
+                  <Search className="h-4 w-4 text-gray-400" />
                   {item}
                 </span>
                 <button
                   onClick={(e) => handleHistoryDelete(e, item)}
-                  className="opacity-0 group-hover:opacity-100 text-white/40 hover:text-white transition-all duration-200 p-1.5 rounded-lg hover:bg-white/10"
+                  className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-white transition-opacity p-1"
                   type="button"
                 >
-                  <X className="h-3.5 w-3.5" />
+                  <X className="h-3 w-3" />
                 </button>
               </button>
             ))}

@@ -100,13 +100,13 @@ export default function MovieDetailModal({
 
   return (
     <div
-      className={`fixed inset-0 z-[70] bg-black/90 backdrop-blur-xl transition-opacity duration-500 ${
+      className={`fixed inset-0 z-[70] bg-black/80 transition-opacity duration-300 ${
         isVisible ? "opacity-100" : "opacity-0"
       }`}
       onClick={handleBackdropClick}
     >
       <div
-        className={`fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 max-w-5xl w-[95%] max-h-[95vh] rounded-3xl glass shadow-2xl overflow-hidden transition-all duration-500 ${
+        className={`fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 max-w-5xl w-[95%] max-h-[95vh] rounded-lg bg-zinc-900 shadow-xl overflow-hidden transition-all duration-300 ${
           isVisible ? "opacity-100 scale-100" : "opacity-0 scale-95"
         }`}
         onClick={(e) => e.stopPropagation()}
@@ -114,17 +114,17 @@ export default function MovieDetailModal({
         {/* 閉じるボタン */}
         <button
           onClick={onClose}
-          className="absolute top-5 right-5 z-[80] rounded-full p-2.5 text-white/50 hover:text-white hover:bg-white/10 transition-all duration-300 backdrop-blur-sm border border-white/10 hover:border-white/20"
+          className="absolute top-4 right-4 z-[80] text-gray-400 hover:text-white transition-colors"
         >
-          <X className="h-5 w-5" />
+          <X className="h-6 w-6" />
         </button>
 
         {/* ローディング状態 */}
         {isLoading && (
           <div className="flex items-center justify-center min-h-full py-20">
             <div className="text-center">
-              <div className="mb-4 inline-block h-12 w-12 animate-spin rounded-full border-4 border-white/10 border-t-[#d4af37]"></div>
-              <p className="text-white/50 font-medium">{t.processing}</p>
+              <div className="mb-4 inline-block h-12 w-12 animate-spin rounded-full border-4 border-gray-700 border-t-amber-400"></div>
+              <p className="text-gray-400">{t.processing}</p>
             </div>
           </div>
         )}
@@ -133,68 +133,63 @@ export default function MovieDetailModal({
         {!isLoading && (
           <div className="flex flex-col md:flex-row">
             {/* 左側: ポスター、タイトル、評価（40%） */}
-            <div className="w-full md:w-2/5 flex flex-col items-start p-8 md:p-10 space-y-6">
+            <div className="w-full md:w-2/5 flex flex-col items-start p-8 space-y-4">
               {movie.poster_path ? (
-                <div className="relative w-full rounded-2xl overflow-hidden shadow-2xl border border-white/10">
-                  <img
-                    src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
-                    alt={movie.title || movie.name}
-                    className="aspect-[2/3] object-cover w-full"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none"></div>
-                </div>
+                <img
+                  src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
+                  alt={movie.title || movie.name}
+                  className="aspect-[2/3] object-cover w-full rounded-lg shadow-2xl"
+                />
               ) : (
-                <div className="flex aspect-[2/3] w-full items-center justify-center rounded-2xl bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border border-white/10">
-                  <span className="text-6xl opacity-20">🎬</span>
+                <div className="flex aspect-[2/3] w-full items-center justify-center rounded-lg bg-zinc-800">
+                  <span className="text-6xl">🎬</span>
                 </div>
               )}
 
-              <div className="space-y-3">
-                <h2 className="text-4xl md:text-5xl font-bold text-white leading-tight tracking-tight">
-                  {movie.title || movie.name}
-                </h2>
+              <h2 className="text-4xl font-extrabold mt-4 text-white">
+                {movie.title || movie.name}
+              </h2>
 
-                {movie.original_title && movie.original_title !== movie.title && (
-                  <p className="text-lg text-white/50 font-medium">{movie.original_title}</p>
+              {movie.original_title && movie.original_title !== movie.title && (
+                <p className="text-lg text-gray-400">{movie.original_title}</p>
+              )}
+
+              <div className="flex items-center space-x-4 text-lg text-yellow-500">
+                {movie.vote_average > 0 && (
+                  <div className="flex items-center gap-1">
+                    <Star className="h-6 w-6 fill-yellow-500 text-yellow-500" />
+                    <span className="font-semibold">{movie.vote_average.toFixed(1)}</span>
+                  </div>
                 )}
-
-                <div className="flex items-center gap-5 text-base">
-                  {movie.vote_average > 0 && (
-                    <div className="flex items-center gap-2">
-                      <Star className="h-6 w-6 fill-[#d4af37] text-[#d4af37]" />
-                      <span className="font-bold text-white">{movie.vote_average.toFixed(1)}</span>
-                    </div>
-                  )}
-                  <span className="text-white/40">
-                    {movie.release_date || movie.first_air_date}
-                  </span>
-                </div>
+                <span className="text-gray-400">
+                  {movie.release_date || movie.first_air_date}
+                </span>
               </div>
             </div>
 
             {/* 右側: 詳細情報（60%） */}
-            <div className="w-full md:w-3/5 p-8 md:p-10 space-y-8 overflow-y-auto">
+            <div className="w-full md:w-3/5 p-8 space-y-8 overflow-y-auto">
               {/* 概要 */}
-              <div className={`animate-in fade-in ${movieDetails ? "" : "opacity-0"}`}>
-                <h3 className="text-xl font-bold pb-3 mb-4 text-white border-b border-white/10">
+              <div>
+                <h3 className="text-2xl font-bold border-b border-gray-700 pb-2 mb-4 text-white">
                   概要
                 </h3>
-                <p className="text-base leading-relaxed text-white/70 font-light">
+                <p className="text-base leading-relaxed text-gray-300">
                   {movieDetails?.overview || movie.overview || t.noOverview}
                 </p>
               </div>
 
               {/* ジャンル */}
               {movieDetails?.genres && movieDetails.genres.length > 0 && (
-                <div className={`animate-in fade-in ${movieDetails ? "" : "opacity-0"}`} style={{ animationDelay: "100ms" }}>
-                  <h3 className="text-xl font-bold pb-3 mb-4 text-white border-b border-white/10">
+                <div>
+                  <h3 className="text-2xl font-bold border-b border-gray-700 pb-2 mb-4 text-white">
                     ジャンル
                   </h3>
-                  <div className="flex flex-wrap gap-2.5 mt-4">
+                  <div className="flex flex-wrap gap-2 mt-4">
                     {movieDetails.genres.map((genre: any) => (
                       <span
                         key={genre.id}
-                        className="px-4 py-1.5 text-sm bg-[#d4af37]/20 text-[#d4af37] rounded-full font-medium border border-[#d4af37]/30"
+                        className="px-3 py-1 text-sm bg-yellow-600/30 text-yellow-300 rounded-full font-medium"
                       >
                         {genre.name}
                       </span>
@@ -205,36 +200,36 @@ export default function MovieDetailModal({
 
               {/* その他の情報 */}
               {movieDetails && (
-                <div className={`grid grid-cols-2 gap-x-8 gap-y-4 text-sm mt-6 animate-in fade-in ${movieDetails ? "" : "opacity-0"}`} style={{ animationDelay: "200ms" }}>
+                <div className="grid grid-cols-2 gap-x-6 gap-y-4 text-base mt-6">
                   {movieDetails.release_date && (
                     <>
-                      <div className="text-white/40 font-medium">公開日</div>
-                      <div className="text-white/80">{movieDetails.release_date || movieDetails.first_air_date}</div>
+                      <div className="text-gray-400">公開日</div>
+                      <div className="text-gray-300">{movieDetails.release_date || movieDetails.first_air_date}</div>
                     </>
                   )}
                   {movieDetails.runtime && (
                     <>
-                      <div className="text-white/40 font-medium">上映時間</div>
-                      <div className="text-white/80">{movieDetails.runtime}分</div>
+                      <div className="text-gray-400">上映時間</div>
+                      <div className="text-gray-300">{movieDetails.runtime}分</div>
                     </>
                   )}
                   {movieDetails.original_language && (
                     <>
-                      <div className="text-white/40 font-medium">言語</div>
-                      <div className="text-white/80">{movieDetails.original_language.toUpperCase()}</div>
+                      <div className="text-gray-400">言語</div>
+                      <div className="text-gray-300">{movieDetails.original_language.toUpperCase()}</div>
                     </>
                   )}
                 </div>
               )}
 
               {/* アクションボタン */}
-              <div className="flex gap-3 pt-6">
+              <div className="flex gap-3 pt-4">
                 <button
                   onClick={handleWatchlistToggle}
-                  className={`flex items-center gap-2.5 rounded-xl px-6 py-3.5 font-semibold transition-all duration-300 ${
+                  className={`flex items-center gap-2 rounded-lg px-6 py-3 font-medium transition-colors duration-200 ${
                     isInWatchlist
-                      ? "border border-white/20 bg-white/5 text-white hover:bg-white/10 hover:border-white/30"
-                      : "bg-gradient-to-r from-[#d4af37] to-[#f4d03f] text-black hover:from-[#f4d03f] hover:to-[#d4af37] shadow-lg shadow-[#d4af37]/20 hover:shadow-[#d4af37]/30 hover:scale-105"
+                      ? "border border-zinc-700 bg-zinc-800 text-white hover:bg-zinc-700"
+                      : "bg-amber-400 text-black hover:bg-amber-300"
                   }`}
                 >
                   <Plus className="h-5 w-5" />
@@ -242,7 +237,7 @@ export default function MovieDetailModal({
                 </button>
                 <button
                   onClick={() => setShowReviewForm(true)}
-                  className="rounded-xl border border-white/20 bg-white/5 px-6 py-3.5 font-semibold text-white hover:bg-white/10 hover:border-white/30 transition-all duration-300 hover:scale-105"
+                  className="rounded-lg border border-zinc-700 bg-zinc-800 px-6 py-3 font-medium text-white transition-colors duration-200 hover:bg-zinc-700"
                 >
                   {existingReview ? t.editReview : t.writeReview}
                 </button>
@@ -253,11 +248,11 @@ export default function MovieDetailModal({
 
         {/* レビューフォーム（モーダル内に表示） */}
         {showReviewForm && movie && (
-          <div className="absolute inset-0 bg-[#1A1A1A] rounded-3xl overflow-y-auto transition-all duration-500 opacity-0 animate-in fade-in">
-            <div className="p-8">
+          <div className="absolute inset-0 bg-zinc-900 rounded-lg overflow-y-auto">
+            <div className="p-6">
               <button
                 onClick={() => setShowReviewForm(false)}
-                className="absolute top-5 right-5 z-[80] rounded-full p-2.5 text-white/50 hover:text-white hover:bg-white/10 transition-all duration-300 backdrop-blur-sm border border-white/10 hover:border-white/20"
+                className="absolute right-4 top-4 rounded-full p-2 text-gray-400 transition-colors hover:bg-zinc-800 hover:text-white"
               >
                 <X className="h-5 w-5" />
               </button>

@@ -136,39 +136,34 @@ export default function WatchlistPage() {
   };
 
   return (
-    <div className="min-h-screen min-h-[100dvh] bg-[#0a0a0a] text-white">
+    <div className="min-h-screen min-h-[100dvh] bg-[#121212] text-white">
       <Header
         onSearchResults={() => {}}
         onQueryChange={() => {}}
         isLoading={false}
       />
       <main className="max-w-7xl mx-auto px-4 py-10 sm:px-6 lg:px-8">
-        <div className="mb-10">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-white via-white to-[#d4af37] bg-clip-text text-transparent tracking-tight mb-3">
-            見たいリスト
-          </h1>
-          <p className="text-white/50 font-medium">保存した映画・ドラマのリスト</p>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-white mb-2">見たいリスト</h1>
+          <p className="text-zinc-400">保存した映画・ドラマのリスト</p>
         </div>
 
         {watchlist.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-24 text-center">
-            <div className="mb-6 relative">
-              <Film className="h-20 w-20 text-white/10" />
-              <div className="absolute inset-0 bg-[#d4af37]/10 blur-2xl"></div>
-            </div>
-            <p className="text-xl text-white/60 font-semibold mt-4 mb-6">
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <Film className="mb-4 h-16 w-16 text-zinc-700" />
+            <p className="text-xl text-gray-400 mt-4 mb-4">
               見たい映画がありません。検索して追加してください。
             </p>
             <div className="flex gap-4 mt-6">
               <button
                 onClick={() => router.push("/")}
-                className="rounded-xl bg-gradient-to-r from-[#d4af37] to-[#f4d03f] px-8 py-4 font-semibold text-black transition-all duration-300 hover:from-[#f4d03f] hover:to-[#d4af37] shadow-lg shadow-[#d4af37]/20 hover:shadow-[#d4af37]/30 hover:scale-105"
+                className="rounded-lg bg-amber-400 px-6 py-3 font-medium text-black transition-colors hover:bg-amber-300"
               >
                 映画を検索
               </button>
               <button
                 onClick={() => router.push("/?tab=popular")}
-                className="rounded-xl border border-white/20 bg-white/5 px-8 py-4 font-semibold text-white hover:bg-white/10 hover:border-white/30 transition-all duration-300 hover:scale-105"
+                className="rounded-lg border border-zinc-700 bg-zinc-800 px-6 py-3 font-medium text-white transition-colors hover:bg-zinc-700"
               >
                 人気映画を見る
               </button>
