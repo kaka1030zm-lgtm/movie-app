@@ -264,8 +264,12 @@ export default function Home() {
 
   return (
     <div className="min-h-screen min-h-[100dvh] bg-[#121212] text-white">
-      <Header />
-      <main className="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
+      <Header
+        onSearchResults={setSearchResults}
+        onQueryChange={setSearchQuery}
+        isLoading={isLoading}
+      />
+      <main className="max-w-7xl mx-auto px-4 py-10 sm:px-6 lg:px-8">
         {/* タブ */}
         <div className="mb-8 flex flex-wrap gap-2 border-b border-zinc-800">
           <button
@@ -330,13 +334,6 @@ export default function Home() {
               </div>
             )}
 
-            {/* 検索 */}
-            <MovieSearch
-              onSearchResults={setSearchResults}
-              onQueryChange={setSearchQuery}
-              isLoading={isLoading}
-            />
-
             {/* 検索結果タイトル */}
             {searchQuery.trim() && (
               <div className="mb-4">
@@ -372,14 +369,19 @@ export default function Home() {
                 ))}
               </div>
             ) : displayMovies.length > 0 ? (
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
-                {displayMovies.map((movie) => (
-                  <MovieCard
+              <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4">
+                {displayMovies.map((movie, index) => (
+                  <div
                     key={movie.id}
-                    movie={movie}
-                    onClick={() => setSelectedMovieForDetail(movie)}
-                    isLoading={false}
-                  />
+                    className="animate-in fade-in"
+                    style={{ animationDelay: `${index * 50}ms` }}
+                  >
+                    <MovieCard
+                      movie={movie}
+                      onClick={() => setSelectedMovieForDetail(movie)}
+                      isLoading={false}
+                    />
+                  </div>
                 ))}
               </div>
             ) : !isLoading && !error && searchQuery.trim() ? (

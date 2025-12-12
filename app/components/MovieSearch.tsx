@@ -62,7 +62,7 @@ export default function MovieSearch({ onSearchResults, onQueryChange, isLoading 
   }, [query]);
 
   return (
-    <div className="w-full max-w-2xl mx-auto mb-8">
+    <div className="w-full max-w-xl">
       <div className="relative">
         <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-zinc-400" />
         <input
@@ -70,11 +70,11 @@ export default function MovieSearch({ onSearchResults, onQueryChange, isLoading 
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={t.searchPlaceholder}
-          className="w-full rounded-xl border border-zinc-700 bg-zinc-900/80 py-4 pl-12 pr-4 text-white placeholder-zinc-500 focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400/20 text-lg"
+          className="w-full rounded-lg border border-zinc-700 bg-zinc-900/80 py-3 pl-12 pr-4 text-white placeholder-zinc-500 focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400/20"
         />
         {isLoading && (
           <div className="absolute right-4 top-1/2 -translate-y-1/2">
-            <div className="h-5 w-5 animate-spin rounded-full border-2 border-amber-400 border-t-transparent"></div>
+            <div className="h-4 w-4 animate-spin rounded-full border-2 border-amber-400 border-t-transparent"></div>
           </div>
         )}
       </div>

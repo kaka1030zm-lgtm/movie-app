@@ -85,7 +85,7 @@ export default function MovieDetailModal({
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
       onClick={handleBackdropClick}
     >
-      <div className="relative w-full max-w-5xl max-h-[90vh] overflow-y-auto rounded-lg border border-zinc-800 bg-[#1e1e1e]">
+      <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-lg border border-zinc-800 bg-[#1e1e1e]">
         <button
           onClick={onClose}
           className="absolute right-4 top-4 z-10 rounded-full bg-zinc-800/80 p-2 text-zinc-400 transition-colors hover:bg-zinc-700 hover:text-white"
@@ -94,25 +94,25 @@ export default function MovieDetailModal({
         </button>
 
         <div className="p-6">
-          {/* 2カラムレイアウト: ポスター（左）、情報（右） */}
+          {/* 2カラムレイアウト: ポスター（左30%）、情報（右70%） */}
           <div className="flex gap-6">
-            {/* 左側: ポスター画像 */}
-            <div className="flex-shrink-0">
+            {/* 左側: ポスター画像（30%） */}
+            <div className="w-1/3 flex-shrink-0">
               {movie.poster_path ? (
                 <img
                   src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
                   alt={movie.title || movie.name}
-                  className="h-auto w-64 rounded-lg object-cover"
+                  className="h-auto w-full rounded-lg object-cover"
                 />
               ) : (
-                <div className="flex h-96 w-64 items-center justify-center rounded-lg bg-zinc-800">
+                <div className="flex h-96 w-full items-center justify-center rounded-lg bg-zinc-800">
                   <span className="text-6xl">🎬</span>
                 </div>
               )}
             </div>
 
-            {/* 右側: 詳細情報 */}
-            <div className="flex-1 min-w-0">
+            {/* 右側: 詳細情報（70%） */}
+            <div className="w-2/3 flex-shrink-0 p-8">
               <h2 className="mb-2 text-3xl font-bold text-white">
                 {movie.title || movie.name}
               </h2>
