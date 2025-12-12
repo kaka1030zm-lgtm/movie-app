@@ -189,31 +189,8 @@ export default function ReviewForm({ movie, existingReview, onSave, onClose, onE
             {movie.release_date || movie.first_air_date || ""}
           </p>
         </div>
-      </div>
 
-        <div className="mb-8 flex items-center gap-5 pb-6 border-b border-white/10">
-          {movie.poster_path ? (
-            <div className="relative rounded-xl overflow-hidden border border-white/10 shadow-lg">
-              <img
-                src={`https://image.tmdb.org/t/p/w154${movie.poster_path}`}
-                alt={movie.title || movie.name}
-                className="h-28 w-20 object-cover"
-              />
-            </div>
-          ) : (
-            <div className="flex h-28 w-20 items-center justify-center rounded-xl bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border border-white/10">
-              <span className="text-3xl opacity-20">🎬</span>
-            </div>
-          )}
-          <div>
-            <h2 className="text-2xl font-bold text-white mb-1">{movie.title || movie.name}</h2>
-            <p className="text-sm text-white/50 font-medium">
-              {movie.release_date || movie.first_air_date || ""}
-            </p>
-          </div>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6">
           {/* レビュータイトル */}
           <div>
             <label className="mb-2 block text-sm font-medium text-zinc-300">
@@ -237,23 +214,23 @@ export default function ReviewForm({ movie, existingReview, onSave, onClose, onE
           </div>
 
           <div>
-            <label className="mb-3 block text-sm font-semibold text-white/90">
+            <label className="mb-2 block text-sm font-medium text-zinc-300">
               {t.platform}
             </label>
-            <div className="grid grid-cols-4 gap-3 sm:grid-cols-7">
+            <div className="grid grid-cols-4 gap-2 sm:grid-cols-7">
               {PLATFORMS.map((p) => (
                 <button
                   key={p.id}
                   type="button"
                   onClick={() => setPlatform(p.id)}
-                  className={`flex flex-col items-center gap-2 rounded-xl border p-3 transition-all duration-300 ${
+                  className={`flex flex-col items-center gap-1 rounded-lg border p-2 transition-colors ${
                     platform === p.id
-                      ? "border-[#d4af37] bg-[#d4af37]/20 shadow-lg shadow-[#d4af37]/10 scale-105"
-                      : "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10"
+                      ? "border-amber-400 bg-amber-400/10"
+                      : "border-zinc-700 bg-zinc-800/50 hover:border-zinc-600"
                   }`}
                 >
-                  <img src={p.logo} alt={p.name} className="h-6 w-6 object-contain opacity-80" />
-                  <span className="text-xs text-white/70 font-medium">{p.name}</span>
+                  <img src={p.logo} alt={p.name} className="h-6 w-6 object-contain" />
+                  <span className="text-xs text-zinc-300">{p.name}</span>
                 </button>
               ))}
             </div>
