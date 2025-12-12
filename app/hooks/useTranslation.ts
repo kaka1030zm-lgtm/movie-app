@@ -407,17 +407,29 @@ export const useTranslation = () => {
   const [apiLang, setApiLang] = useState<string>("ja-JP");
 
   useEffect(() => {
-    const browserFull = navigator.language; // "es-ES", "fr-FR", "ko-KR" など
-    const browserShort = browserFull.split("-")[0]; // "es", "fr", "ko" など
+    // クライアントサイドでのみ実行
+    if (typeof window === "undefined" || typeof navigator === "undefined") {
+      return;
+    }
 
-    // API用: ブラウザの言語設定をそのまま使用（未検出なら "en-US"）
-    setApiLang(browserFull || "en-US");
+    try {
+      const browserFull = navigator.language; // "es-ES", "fr-FR", "ko-KR" など
+      const browserShort = browserFull.split("-")[0]; // "es", "fr", "ko" など
 
-    // UI用: resourcesに存在する言語ならその言語、存在しない場合は英語をフォールバック
-    if (resources[browserShort as keyof typeof resources]) {
-      setLanguage(browserShort);
-    } else {
-      setLanguage("en");
+      // API用: ブラウザの言語設定をそのまま使用（未検出なら "en-US"）
+      setApiLang(browserFull || "en-US");
+
+      // UI用: resourcesに存在する言語ならその言語、存在しない場合は英語をフォールバック
+      if (resources[browserShort as keyof typeof resources]) {
+        setLanguage(browserShort);
+      } else {
+        setLanguage("en");
+      }
+    } catch (error) {
+      console.error("Error setting language:", error);
+      // エラーが発生した場合はデフォルト値を使用
+      setLanguage("ja");
+      setApiLang("ja-JP");
     }
   }, []);
 

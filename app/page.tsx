@@ -30,23 +30,32 @@ export default function Home() {
 
   // ローカルストレージからデータを読み込む
   useEffect(() => {
-    const savedReviews = localStorage.getItem(STORAGE_KEY_REVIEWS);
-    const savedWatchlist = localStorage.getItem(STORAGE_KEY_WATCHLIST);
-
-    if (savedReviews) {
-      try {
-        setReviews(JSON.parse(savedReviews));
-      } catch (e) {
-        console.error("Error loading reviews:", e);
-      }
+    // クライアントサイドでのみ実行
+    if (typeof window === "undefined") {
+      return;
     }
 
-    if (savedWatchlist) {
-      try {
-        setWatchlist(JSON.parse(savedWatchlist));
-      } catch (e) {
-        console.error("Error loading watchlist:", e);
+    try {
+      const savedReviews = localStorage.getItem(STORAGE_KEY_REVIEWS);
+      const savedWatchlist = localStorage.getItem(STORAGE_KEY_WATCHLIST);
+
+      if (savedReviews) {
+        try {
+          setReviews(JSON.parse(savedReviews));
+        } catch (e) {
+          console.error("Error loading reviews:", e);
+        }
       }
+
+      if (savedWatchlist) {
+        try {
+          setWatchlist(JSON.parse(savedWatchlist));
+        } catch (e) {
+          console.error("Error loading watchlist:", e);
+        }
+      }
+    } catch (error) {
+      console.error("Error accessing localStorage:", error);
     }
   }, []);
 
