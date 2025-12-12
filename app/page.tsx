@@ -577,7 +577,7 @@ export default function Home() {
   }, [activeTab, recommendedMovies, searchQuery, searchResults]);
 
   return (
-    <div className="min-h-screen min-h-[100dvh] bg-[#121212] text-white">
+    <div className="min-h-screen min-h-[100dvh] bg-[#0a0a0a] text-white">
       <Header
         onSearchResults={(results) => {
           setSearchResults(results);
@@ -625,46 +625,58 @@ export default function Home() {
         )}
 
         {/* タブ */}
-        <div className="mb-8 flex flex-wrap gap-2 border-b border-zinc-800">
+        <div className="mb-10 flex flex-wrap gap-1 border-b border-white/10">
           <button
             onClick={() => setActiveTab("popular")}
-            className={`px-4 py-2 font-medium transition-colors ${
+            className={`px-6 py-3 font-semibold text-sm transition-all duration-300 relative ${
               activeTab === "popular"
-                ? "border-b-2 border-amber-400 text-amber-400"
-                : "text-zinc-400 hover:text-white"
+                ? "text-white"
+                : "text-white/50 hover:text-white/80"
             }`}
           >
             {t.popular}
+            {activeTab === "popular" && (
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#d4af37] to-[#f4d03f]"></span>
+            )}
           </button>
           <button
             onClick={() => setActiveTab("recommended")}
-            className={`px-4 py-2 font-medium transition-colors ${
+            className={`px-6 py-3 font-semibold text-sm transition-all duration-300 relative ${
               activeTab === "recommended"
-                ? "border-b-2 border-amber-400 text-amber-400"
-                : "text-zinc-400 hover:text-white"
+                ? "text-white"
+                : "text-white/50 hover:text-white/80"
             }`}
           >
             {t.recommended}
+            {activeTab === "recommended" && (
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#d4af37] to-[#f4d03f]"></span>
+            )}
           </button>
           <button
             onClick={() => setActiveTab("reviews")}
-            className={`px-4 py-2 font-medium transition-colors ${
+            className={`px-6 py-3 font-semibold text-sm transition-all duration-300 relative ${
               activeTab === "reviews"
-                ? "border-b-2 border-amber-400 text-amber-400"
-                : "text-zinc-400 hover:text-white"
+                ? "text-white"
+                : "text-white/50 hover:text-white/80"
             }`}
           >
             {t.myReviews}
+            {activeTab === "reviews" && (
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#d4af37] to-[#f4d03f]"></span>
+            )}
           </button>
           <button
             onClick={() => setActiveTab("watchlist")}
-            className={`px-4 py-2 font-medium transition-colors ${
+            className={`px-6 py-3 font-semibold text-sm transition-all duration-300 relative ${
               activeTab === "watchlist"
-                ? "border-b-2 border-amber-400 text-amber-400"
-                : "text-zinc-400 hover:text-white"
+                ? "text-white"
+                : "text-white/50 hover:text-white/80"
             }`}
           >
             {t.watchlist}
+            {activeTab === "watchlist" && (
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#d4af37] to-[#f4d03f]"></span>
+            )}
           </button>
         </div>
 
@@ -682,11 +694,13 @@ export default function Home() {
         ) : (
           <div className="space-y-6">
             {activeTab === "recommended" && !searchQuery.trim() && (
-              <div className="mb-4">
-                <h2 className="text-xl font-semibold text-white">あなたに合わせたピックアップ</h2>
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-white via-white to-[#d4af37] bg-clip-text text-transparent tracking-tight mb-4">
+                  あなたに合わせたピックアップ
+                </h2>
                 {!isLoggedIn ? (
-                  <div className="mt-4 rounded-lg border border-amber-400/50 bg-amber-400/10 p-4">
-                    <p className="text-amber-400 mb-3">
+                  <div className="mt-4 rounded-2xl border border-[#d4af37]/30 bg-[#d4af37]/10 backdrop-blur-xl p-6">
+                    <p className="text-[#d4af37] mb-4 font-semibold">
                       ログインしてパーソナライズされたおすすめを見る
                     </p>
                     <button
@@ -699,37 +713,39 @@ export default function Home() {
                           setToast({ message: "ログインしました", type: "success" });
                         }
                       }}
-                      className="rounded-lg bg-amber-400 px-6 py-2 font-medium text-black transition-colors hover:bg-amber-300"
+                      className="rounded-xl bg-gradient-to-r from-[#d4af37] to-[#f4d03f] px-6 py-3 font-semibold text-black transition-all duration-300 hover:from-[#f4d03f] hover:to-[#d4af37] shadow-lg shadow-[#d4af37]/20 hover:shadow-[#d4af37]/30 hover:scale-105"
                     >
                       ログイン
                     </button>
                   </div>
                 ) : watchlist.length === 0 ? (
-                  <p className="text-sm text-zinc-400 mt-2">
+                  <p className="text-sm text-white/50 mt-2 font-medium">
                     まだ見たいリストに映画がありません。映画を検索して追加すると、あなたのためのおすすめが表示されます。
                   </p>
                 ) : (
-                  <p className="text-sm text-zinc-400 mt-2">{t.recommendationSub}</p>
+                  <p className="text-sm text-white/50 mt-2 font-medium">{t.recommendationSub}</p>
                 )}
               </div>
             )}
 
             {/* 検索結果タイトル */}
             {searchQuery.trim() && (
-              <div className="mb-4">
-                <h2 className="text-xl font-semibold text-white">
-                  {t.searchResults} {searchResults.length > 0 && `(${searchResults.length})`}
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold text-white tracking-tight">
+                  {t.searchResults} {searchResults.length > 0 && (
+                    <span className="text-white/50 font-normal">({searchResults.length})</span>
+                  )}
                 </h2>
               </div>
             )}
 
             {/* エラーメッセージ */}
             {error && (
-              <div className="rounded-lg border border-amber-400/50 bg-amber-400/10 p-4 text-amber-400">
-                <p className="font-medium">⚠️ {error}</p>
+              <div className="rounded-2xl border border-white/20 bg-white/5 backdrop-blur-xl p-5 text-white/90 mb-6">
+                <p className="font-semibold mb-2">⚠️ {error}</p>
                 {!TMDB_API_KEY && (
-                  <p className="mt-2 text-sm">
-                    TMDB APIキーを取得するには、<a href="https://www.themoviedb.org/settings/api" target="_blank" rel="noopener noreferrer" className="underline">TMDBの設定ページ</a>からAPIキーを取得し、.env.localファイルに追加してください。
+                  <p className="mt-2 text-sm text-white/60">
+                    TMDB APIキーを取得するには、<a href="https://www.themoviedb.org/settings/api" target="_blank" rel="noopener noreferrer" className="text-[#d4af37] hover:text-[#f4d03f] underline transition-colors">TMDBの設定ページ</a>からAPIキーを取得し、.env.localファイルに追加してください。
                   </p>
                 )}
               </div>

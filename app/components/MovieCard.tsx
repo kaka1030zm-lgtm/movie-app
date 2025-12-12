@@ -44,21 +44,24 @@ export default function MovieCard({
   };
 
   return (
-    <div className="group relative overflow-hidden rounded-lg bg-zinc-900/50 transition-transform duration-200 hover:scale-[1.03] hover:shadow-xl hover:shadow-amber-400/10 animate-in fade-in">
+    <div className="group relative overflow-hidden rounded-2xl bg-[#141414] border border-white/5 transition-all duration-500 premium-hover animate-in fade-in">
       <button
         onClick={onClick}
-        className="w-full"
+        className="w-full text-left"
       >
-        <div className="aspect-[2/3] w-full relative">
+        <div className="aspect-[2/3] w-full relative overflow-hidden rounded-t-2xl">
           {movie.poster_path ? (
-            <img
-              src={`https://image.tmdb.org/t/p/w342${movie.poster_path}`}
-              alt={movie.title || movie.name}
-              className="h-full w-full object-cover rounded-lg"
-            />
+            <>
+              <img
+                src={`https://image.tmdb.org/t/p/w342${movie.poster_path}`}
+                alt={movie.title || movie.name}
+                className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            </>
           ) : (
-            <div className="flex h-full w-full items-center justify-center bg-zinc-800 rounded-lg">
-              <Film className="h-12 w-12 text-zinc-600" />
+            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a]">
+              <Film className="h-16 w-16 text-white/10" />
             </div>
           )}
           
@@ -67,11 +70,11 @@ export default function MovieCard({
             <button
               onClick={handleBookmarkClick}
               disabled={isWatchlistLoading}
-              className={`absolute top-2 right-2 z-10 rounded-full p-2 backdrop-blur-sm transition-all duration-200 ${
+              className={`absolute top-3 right-3 z-10 rounded-full p-2.5 backdrop-blur-md transition-all duration-300 ${
                 isInWatchlist
-                  ? "bg-amber-400/90 text-black hover:bg-amber-400"
-                  : "bg-black/50 text-white hover:bg-black/70 hover:text-amber-400"
-              } ${isWatchlistLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                  ? "bg-[#d4af37]/90 text-black hover:bg-[#d4af37] shadow-lg shadow-[#d4af37]/20"
+                  : "bg-black/40 text-white/70 hover:bg-black/60 hover:text-[#d4af37] border border-white/10"
+              } ${isWatchlistLoading ? "opacity-50 cursor-not-allowed" : "hover:scale-110"}`}
               title={isInWatchlist ? "見たいリストから削除" : "見たいリストに追加"}
             >
               {isWatchlistLoading ? (
@@ -84,15 +87,15 @@ export default function MovieCard({
             </button>
           )}
         </div>
-        {/* タイトルと評価用のスペース（高さ60px程度） */}
-        <div className="h-[60px] p-3 flex flex-col justify-center">
-          <h3 className="text-sm font-semibold text-white line-clamp-2 mb-1">
+        {/* タイトルと評価用のスペース */}
+        <div className="h-[70px] p-4 flex flex-col justify-center bg-gradient-to-b from-[#141414] to-[#0a0a0a]">
+          <h3 className="text-sm font-semibold text-white/95 line-clamp-2 mb-2 leading-snug group-hover:text-white transition-colors">
             {movie.title || movie.name}
           </h3>
           {movie.vote_average > 0 && (
-            <div className="flex items-center gap-1 text-xs text-zinc-400">
-              <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-              <span>{movie.vote_average.toFixed(1)}</span>
+            <div className="flex items-center gap-1.5 text-xs text-white/50">
+              <Star className="h-3.5 w-3.5 fill-[#d4af37] text-[#d4af37]" />
+              <span className="font-medium">{movie.vote_average.toFixed(1)}</span>
             </div>
           )}
         </div>
