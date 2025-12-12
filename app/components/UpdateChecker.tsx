@@ -53,7 +53,7 @@ export default function UpdateChecker() {
       // 少し待ってからリロード（ユーザーに通知を表示する時間を確保）
       const timer = setTimeout(() => {
         // このアプリのキャッシュのみをクリア（同じオリジンのキャッシュのみ）
-        if ("caches" in window) {
+        if (typeof window !== "undefined" && "caches" in window) {
           caches.keys().then((names) => {
             // このアプリのドメインのキャッシュのみを削除
             // caches.keys()は既に同じオリジン（ドメイン）のキャッシュのみを返すため、
@@ -64,10 +64,12 @@ export default function UpdateChecker() {
               return caches.delete(name);
             });
             Promise.all(deletePromises).then(() => {
-              window.location.reload();
+              if (typeof window !== "undefined") {
+                window.location.reload();
+              }
             });
           });
-        } else {
+        } else if (typeof window !== "undefined") {
           window.location.reload();
         }
       }, 2000); // 2秒後に自動リロード
