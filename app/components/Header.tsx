@@ -8,10 +8,11 @@ import Link from "next/link";
 interface HeaderProps {
   onSearchResults: (results: any[]) => void;
   onQueryChange: (query: string) => void;
+  onError?: (error: string) => void;
   isLoading?: boolean;
 }
 
-export default function Header({ onSearchResults, onQueryChange, isLoading }: HeaderProps) {
+export default function Header({ onSearchResults, onQueryChange, onError, isLoading }: HeaderProps) {
   const { t } = useTranslation();
 
   return (
