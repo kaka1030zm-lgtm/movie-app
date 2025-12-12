@@ -475,11 +475,7 @@ export default function Home() {
       // });
       // if (!response.ok) throw new Error("Failed to add to watchlist");
 
-      // 成功時のトースト通知
-      setToast({ 
-        message: `「${movie.title || movie.name}」を見たいリストに追加しました`, 
-        type: "success" 
-      });
+      // トースト通知は表示しない（視覚的フィードバックのみ）
     } catch (error) {
       // エラー時はロールバック
       setWatchlist(previousWatchlist);
@@ -525,10 +521,7 @@ export default function Home() {
       // if (!response.ok) throw new Error("Failed to remove from watchlist");
 
       // 成功時のトースト通知
-      setToast({ 
-        message: `「${item?.title || ""}」を見たいリストから削除しました`, 
-        type: "info" 
-      });
+      // トースト通知は表示しない（視覚的フィードバックのみ）
     } catch (error) {
       // エラー時はロールバック
       setWatchlist(previousWatchlist);
@@ -598,8 +591,8 @@ export default function Home() {
       />
       <main className="max-w-7xl mx-auto px-4 py-10 sm:px-6 lg:px-8">
         {/* 人気/おすすめ映画カルーセル（検索結果がない場合のみ表示、検索バー直下） */}
-        {!searchQuery.trim() && activeTab === "popular" && (
-          <div className="mt-10 mb-8">
+        {!searchQuery.trim() && (
+          <div className="mt-10 mb-8 space-y-10">
             {popularMovies.length > 0 && (
               <MovieCarousel
                 title="🌍 世界の人気映画"
@@ -614,12 +607,52 @@ export default function Home() {
                 onMovieClick={setSelectedMovieForDetail}
               />
             )}
-            {topRatedMovies.length > 0 && (
-              <MovieCarousel
-                title="⭐ 高評価映画"
-                movies={topRatedMovies}
-                onMovieClick={setSelectedMovieForDetail}
-              />
+            {recommendedMovies.length > 0 && (
+              <div>
+                <h2 className="mb-6 text-2xl font-bold bg-gradient-to-r from-white via-white to-[#d4af37] bg-clip-text text-transparent tracking-tight">
+                  あなたに合わせたピックアップ
+                </h2>
+                <MovieCarousel
+                  title=""
+                  movies={recommendedMovies}
+                  onMovieClick={setSelectedMovieForDetail}
+                />
+              </div>
+            )}
+            {!isLoggedIn && recommendedMovies.length === 0 && (
+              <div className="mb-6">
+                <h2 className="mb-4 text-2xl font-bold bg-gradient-to-r from-white via-white to-[#d4af37] bg-clip-text text-transparent tracking-tight">
+                  あなたに合わせたピックアップ
+                </h2>
+                <div className="mt-4 rounded-2xl border border-[#d4af37]/30 bg-[#d4af37]/10 backdrop-blur-xl p-6">
+                  <p className="text-[#d4af37] mb-4 font-semibold">
+                    ログインしてパーソナライズされたおすすめを見る
+                  </p>
+                  <button
+                    onClick={() => {
+                      if (typeof window !== "undefined") {
+                        const userId = `user_${Date.now()}`;
+                        localStorage.setItem("cinelog_userId", userId);
+                        setIsLoggedIn(true);
+                        setToast({ message: "ログインしました", type: "success" });
+                      }
+                    }}
+                    className="rounded-xl bg-gradient-to-r from-[#d4af37] to-[#f4d03f] px-6 py-3 font-semibold text-black transition-all duration-300 hover:from-[#f4d03f] hover:to-[#d4af37] shadow-lg shadow-[#d4af37]/20 hover:shadow-[#d4af37]/30 hover:scale-105"
+                  >
+                    ログイン
+                  </button>
+                </div>
+              </div>
+            )}
+            {isLoggedIn && watchlist.length === 0 && recommendedMovies.length === 0 && (
+              <div className="mb-6">
+                <h2 className="mb-4 text-2xl font-bold bg-gradient-to-r from-white via-white to-[#d4af37] bg-clip-text text-transparent tracking-tight">
+                  あなたに合わせたピックアップ
+                </h2>
+                <p className="text-sm text-white/50 mt-2 font-medium">
+                  まだ見たいリストに映画がありません。映画を検索して追加すると、あなたのためのおすすめが表示されます。
+                </p>
+              </div>
             )}
           </div>
         )}
@@ -693,40 +726,6 @@ export default function Home() {
           />
         ) : (
           <div className="space-y-6">
-            {activeTab === "recommended" && !searchQuery.trim() && (
-              <div className="mb-6">
-                <h2 className="text-2xl font-bold bg-gradient-to-r from-white via-white to-[#d4af37] bg-clip-text text-transparent tracking-tight mb-4">
-                  あなたに合わせたピックアップ
-                </h2>
-                {!isLoggedIn ? (
-                  <div className="mt-4 rounded-2xl border border-[#d4af37]/30 bg-[#d4af37]/10 backdrop-blur-xl p-6">
-                    <p className="text-[#d4af37] mb-4 font-semibold">
-                      ログインしてパーソナライズされたおすすめを見る
-                    </p>
-                    <button
-                      onClick={() => {
-                        // 簡易的なログイン処理（実際の実装では認証モーダルを表示）
-                        if (typeof window !== "undefined") {
-                          const userId = `user_${Date.now()}`;
-                          localStorage.setItem("cinelog_userId", userId);
-                          setIsLoggedIn(true);
-                          setToast({ message: "ログインしました", type: "success" });
-                        }
-                      }}
-                      className="rounded-xl bg-gradient-to-r from-[#d4af37] to-[#f4d03f] px-6 py-3 font-semibold text-black transition-all duration-300 hover:from-[#f4d03f] hover:to-[#d4af37] shadow-lg shadow-[#d4af37]/20 hover:shadow-[#d4af37]/30 hover:scale-105"
-                    >
-                      ログイン
-                    </button>
-                  </div>
-                ) : watchlist.length === 0 ? (
-                  <p className="text-sm text-white/50 mt-2 font-medium">
-                    まだ見たいリストに映画がありません。映画を検索して追加すると、あなたのためのおすすめが表示されます。
-                  </p>
-                ) : (
-                  <p className="text-sm text-white/50 mt-2 font-medium">{t.recommendationSub}</p>
-                )}
-              </div>
-            )}
 
             {/* 検索結果タイトル */}
             {searchQuery.trim() && (

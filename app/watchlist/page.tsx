@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation";
 import Header from "../components/Header";
 import MovieCard from "../components/MovieCard";
 import Toast from "../components/Toast";
+import MovieDetailModal from "../components/MovieDetailModal";
 import { useTranslation } from "../hooks/useTranslation";
-import { MovieSearchResult, WatchlistItem } from "../components/types";
+import { MovieSearchResult, WatchlistItem, ReviewRecord } from "../components/types";
 import { Film } from "lucide-react";
 
 const STORAGE_KEY_WATCHLIST = "cinelog_watchlist";
@@ -17,6 +18,8 @@ export default function WatchlistPage() {
   const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
   const [watchlistLoading, setWatchlistLoading] = useState<{ [movieId: number]: boolean }>({});
+  const [selectedMovieForDetail, setSelectedMovieForDetail] = useState<MovieSearchResult | null>(null);
+  const [reviews, setReviews] = useState<ReviewRecord[]>([]);
 
   // ローカルストレージからデータを読み込む
   useEffect(() => {
@@ -27,8 +30,12 @@ export default function WatchlistPage() {
       if (savedWatchlist) {
         setWatchlist(JSON.parse(savedWatchlist));
       }
+      const savedReviews = localStorage.getItem("cinelog_reviews");
+      if (savedReviews) {
+        setReviews(JSON.parse(savedReviews));
+      }
     } catch (error) {
-      console.error("Error loading watchlist:", error);
+      console.error("Error loading data:", error);
     }
   }, []);
 
@@ -98,8 +105,17 @@ export default function WatchlistPage() {
   };
 
   const handleMovieClick = (item: WatchlistItem) => {
-    // 映画詳細ページに遷移（またはモーダルを開く）
-    router.push(`/?movieId=${item.id}`);
+    // 詳細モーダルを開く
+    const movie = convertToMovieSearchResult(item);
+    setSelectedMovieForDetail(movie);
+  };
+
+  const isMovieInWatchlist = (movieId: number): boolean => {
+    return watchlist.some((item) => item.id === movieId);
+  };
+
+  const getExistingReview = (movieId: number): ReviewRecord | null => {
+    return reviews.find((r) => r.movieId === movieId) || null;
   };
 
   // WatchlistItemをMovieSearchResultに変換
@@ -166,7 +182,10 @@ export default function WatchlistPage() {
                 <div key={item.id} className="relative">
                   <MovieCard
                     movie={movie}
-                    onClick={() => handleMovieClick(item)}
+                    onClick={() => {
+                      const movie = convertToMovieSearchResult(item);
+                      setSelectedMovieForDetail(movie);
+                    }}
                     isLoading={false}
                     isInWatchlist={true}
                     onToggleWatchlist={(movie, e) => handleRemoveFromWatchlist(movie.id, e)}
@@ -184,6 +203,38 @@ export default function WatchlistPage() {
             message={toast.message}
             type={toast.type}
             onClose={() => setToast(null)}
+          />
+        )}
+
+        {/* 映画詳細モーダル */}
+        {selectedMovieForDetail && (
+          <MovieDetailModal
+            movie={selectedMovieForDetail}
+            isInWatchlist={isMovieInWatchlist(selectedMovieForDetail.id)}
+            existingReview={getExistingReview(selectedMovieForDetail.id)}
+            onClose={() => setSelectedMovieForDetail(null)}
+            onAddToWatchlist={async (movie) => {
+              // 見たいリストに追加（既に追加済みの場合は何もしない）
+              if (!isMovieInWatchlist(movie.id)) {
+                const watchlistItem: WatchlistItem = {
+                  id: movie.id,
+                  title: movie.title || movie.name || "",
+                  originalTitle: movie.original_title || movie.original_name,
+                  posterPath: movie.poster_path,
+                  backdropPath: movie.backdrop_path,
+                  releaseDate: movie.release_date || movie.first_air_date,
+                  mediaType: movie.media_type || (movie.name ? "tv" : "movie"),
+                  addedAt: new Date().toISOString(),
+                };
+                setWatchlist((prev) => [...prev, watchlistItem]);
+              }
+            }}
+            onRemoveFromWatchlist={async (movieId) => {
+              await handleRemoveFromWatchlist(movieId);
+            }}
+            onWriteReview={(movie) => {
+              // レビュー機能は実装済み
+            }}
           />
         )}
       </main>

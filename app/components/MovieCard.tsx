@@ -1,7 +1,7 @@
 "use client";
 
 import { MovieSearchResult } from "./types";
-import { Star, Film, Bookmark, BookmarkCheck } from "lucide-react";
+import { Star, Film } from "lucide-react";
 
 interface MovieCardProps {
   movie: MovieSearchResult;
@@ -44,7 +44,7 @@ export default function MovieCard({
   };
 
   return (
-    <div className="group relative overflow-hidden rounded-2xl bg-[#141414] border border-white/5 transition-all duration-500 premium-hover animate-in fade-in">
+    <div className="group relative overflow-hidden rounded-2xl bg-[#141414] border border-white/5 transition-all duration-300 hover:scale-105 animate-in fade-in">
       <button
         onClick={onClick}
         className="w-full text-left"
@@ -53,9 +53,9 @@ export default function MovieCard({
           {movie.poster_path ? (
             <>
               <img
-                src={`https://image.tmdb.org/t/p/w342${movie.poster_path}`}
+                src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
                 alt={movie.title || movie.name}
-                className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                className="h-full w-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
             </>
@@ -79,10 +79,8 @@ export default function MovieCard({
             >
               {isWatchlistLoading ? (
                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
-              ) : isInWatchlist ? (
-                <BookmarkCheck className="h-5 w-5" />
               ) : (
-                <Bookmark className="h-5 w-5" />
+                <Star className={`h-5 w-5 ${isInWatchlist ? "fill-[#d4af37] text-[#d4af37]" : "text-gray-400"}`} />
               )}
             </button>
           )}

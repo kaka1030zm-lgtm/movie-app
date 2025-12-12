@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { X, Plus, Star } from "lucide-react";
 import { useTranslation } from "../hooks/useTranslation";
 import { MovieSearchResult, ReviewRecord } from "./types";
+import ReviewForm from "./ReviewForm";
 
 interface MovieDetailModalProps {
   movie: MovieSearchResult | null;
@@ -13,6 +14,7 @@ interface MovieDetailModalProps {
   onAddToWatchlist: (movie: MovieSearchResult) => Promise<void>;
   onRemoveFromWatchlist: (movieId: number) => Promise<void>;
   onWriteReview: (movie: MovieSearchResult) => void;
+  onSaveReview?: (review: Omit<ReviewRecord, "id" | "createdAt" | "updatedAt">) => void;
 }
 
 export default function MovieDetailModal({
@@ -23,11 +25,13 @@ export default function MovieDetailModal({
   onAddToWatchlist,
   onRemoveFromWatchlist,
   onWriteReview,
+  onSaveReview,
 }: MovieDetailModalProps) {
   const { t, apiLang } = useTranslation();
   const [movieDetails, setMovieDetails] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const [showReviewForm, setShowReviewForm] = useState(false);
 
   const TMDB_API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 
@@ -35,8 +39,10 @@ export default function MovieDetailModal({
   useEffect(() => {
     if (movie) {
       setIsVisible(true);
+      setShowReviewForm(false);
     } else {
       setIsVisible(false);
+      setShowReviewForm(false);
     }
   }, [movie]);
 
@@ -218,18 +224,6 @@ export default function MovieDetailModal({
                       <div className="text-white/80">{movieDetails.original_language.toUpperCase()}</div>
                     </>
                   )}
-                  {movieDetails.budget && movieDetails.budget > 0 && (
-                    <>
-                      <div className="text-white/40 font-medium">予算</div>
-                      <div className="text-white/80">${movieDetails.budget.toLocaleString()}</div>
-                    </>
-                  )}
-                  {movieDetails.revenue && movieDetails.revenue > 0 && (
-                    <>
-                      <div className="text-white/40 font-medium">興行収入</div>
-                      <div className="text-white/80">${movieDetails.revenue.toLocaleString()}</div>
-                    </>
-                  )}
                 </div>
               )}
 
@@ -247,12 +241,37 @@ export default function MovieDetailModal({
                   {isInWatchlist ? t.removeFromWatchlist : t.addToWatchlist}
                 </button>
                 <button
-                  onClick={() => onWriteReview(movie)}
+                  onClick={() => setShowReviewForm(true)}
                   className="rounded-xl border border-white/20 bg-white/5 px-6 py-3.5 font-semibold text-white hover:bg-white/10 hover:border-white/30 transition-all duration-300 hover:scale-105"
                 >
                   {existingReview ? t.editReview : t.writeReview}
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* レビューフォーム（モーダル内に表示） */}
+        {showReviewForm && movie && (
+          <div className="absolute inset-0 bg-[#1A1A1A] rounded-3xl overflow-y-auto transition-all duration-500 opacity-0 animate-in fade-in">
+            <div className="p-8">
+              <button
+                onClick={() => setShowReviewForm(false)}
+                className="absolute top-5 right-5 z-[80] rounded-full p-2.5 text-white/50 hover:text-white hover:bg-white/10 transition-all duration-300 backdrop-blur-sm border border-white/10 hover:border-white/20"
+              >
+                <X className="h-5 w-5" />
+              </button>
+              <ReviewForm
+                movie={movie}
+                existingReview={existingReview || null}
+                onClose={() => setShowReviewForm(false)}
+                onSave={(review) => {
+                  if (onSaveReview) {
+                    onSaveReview(review);
+                  }
+                  setShowReviewForm(false);
+                }}
+              />
             </div>
           </div>
         )}
