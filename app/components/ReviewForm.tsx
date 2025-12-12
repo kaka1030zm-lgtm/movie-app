@@ -107,22 +107,30 @@ export default function ReviewForm({ movie, existingReview, onSave, onCancel }: 
 
   return (
     <div className="rounded-lg border border-[#1a1a1a] bg-[#0a0a0a] p-6">
-      <div className="mb-6 flex items-center gap-4">
+      <div className="mb-6 flex items-start gap-4">
         {movie.poster_path ? (
           <img
             src={`https://image.tmdb.org/t/p/w154${movie.poster_path}`}
             alt={movie.title}
-            className="h-32 w-24 object-cover rounded"
+            className="h-32 w-24 object-cover rounded flex-shrink-0"
           />
         ) : (
-          <div className="h-32 w-24 bg-[#1a1a1a] rounded flex items-center justify-center">
+          <div className="h-32 w-24 bg-[#2a2a2a] rounded flex items-center justify-center flex-shrink-0">
             <Film className="h-12 w-12 text-gray-600" />
           </div>
         )}
-        <div>
-          <h2 className="text-2xl font-bold text-white mb-1">{movie.title}</h2>
+        <div className="flex-1">
+          <h2 className="text-2xl font-bold text-white mb-2">{movie.title}</h2>
           {movie.release_date && (
-            <p className="text-gray-400">{movie.release_date}</p>
+            <p className="text-sm text-gray-400 mb-4">{movie.release_date}</p>
+          )}
+          {movie.overview && (
+            <div className="mt-4">
+              <h3 className="text-sm font-semibold text-[#D4AF37] mb-2">あらすじ</h3>
+              <p className="text-sm text-gray-300 leading-relaxed max-h-32 overflow-y-auto">
+                {movie.overview}
+              </p>
+            </div>
           )}
         </div>
       </div>

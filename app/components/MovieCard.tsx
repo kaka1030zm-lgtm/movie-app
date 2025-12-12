@@ -85,7 +85,7 @@ export default function MovieCard({
         {/* タイトルと評価用のスペース（高さ60px程度） */}
         <div className="h-[60px] p-3 flex flex-col justify-center">
           <h3 className="text-sm font-semibold text-white line-clamp-2 mb-1">
-            {movie.title || movie.name}
+            {movie.title}
           </h3>
           {movie.vote_average > 0 && (
             <div className="flex items-center gap-1 text-xs text-zinc-400">
