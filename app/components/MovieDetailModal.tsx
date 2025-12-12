@@ -3,11 +3,12 @@
 import { useState, useEffect } from "react";
 import { X, Plus, Star } from "lucide-react";
 import { useTranslation } from "../hooks/useTranslation";
-import { MovieSearchResult } from "./types";
+import { MovieSearchResult, ReviewRecord } from "./types";
 
 interface MovieDetailModalProps {
   movie: MovieSearchResult | null;
   isInWatchlist: boolean;
+  existingReview?: ReviewRecord | null;
   onClose: () => void;
   onAddToWatchlist: (movie: MovieSearchResult) => void;
   onRemoveFromWatchlist: (movieId: number) => void;
@@ -17,6 +18,7 @@ interface MovieDetailModalProps {
 export default function MovieDetailModal({
   movie,
   isInWatchlist,
+  existingReview,
   onClose,
   onAddToWatchlist,
   onRemoveFromWatchlist,
@@ -243,7 +245,7 @@ export default function MovieDetailModal({
                   onClick={() => onWriteReview(movie)}
                   className="rounded-lg border border-zinc-700 bg-zinc-800 px-6 py-3 font-medium text-white transition-colors duration-200 hover:bg-zinc-700"
                 >
-                  {t.writeReview}
+                  {existingReview ? t.editReview : t.writeReview}
                 </button>
               </div>
             </div>

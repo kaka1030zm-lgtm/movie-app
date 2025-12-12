@@ -24,6 +24,7 @@ export interface ReviewRecord {
   releaseDate?: string;
   mediaType: "movie" | "tv";
   platform: string;
+  reviewTitle: string; // レビューのタイトル
   story: number;
   acting: number;
   visuals: number;
@@ -31,6 +32,7 @@ export interface ReviewRecord {
   originality: number;
   emotional: number;
   reviewBody: string;
+  userId?: string; // ユーザーID（認証用）
   createdAt: string;
   updatedAt: string;
 }

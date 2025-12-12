@@ -9,6 +9,7 @@ import ReviewForm from "./components/ReviewForm";
 import MovieList from "./components/MovieList";
 import MovieDetailModal from "./components/MovieDetailModal";
 import UpdateChecker from "./components/UpdateChecker";
+import Toast from "./components/Toast";
 import { useTranslation } from "./hooks/useTranslation";
 import { MovieSearchResult, ReviewRecord, WatchlistItem } from "./components/types";
 
@@ -31,8 +32,26 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
 
   const TMDB_API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+
+  // 簡易的なユーザーID取得（認証チェック）
+  const getUserId = (): string => {
+    if (typeof window === "undefined") return "";
+    let userId = localStorage.getItem("cinelog_userId");
+    if (!userId) {
+      userId = `user_${Date.now()}`;
+      localStorage.setItem("cinelog_userId", userId);
+    }
+    return userId;
+  };
+
+  // 既存レビューのチェック
+  const getExistingReview = (movieId: number): ReviewRecord | null => {
+    const userId = getUserId();
+    return reviews.find((r) => r.movieId === movieId && r.userId === userId) || null;
+  };
 
   // ローカルストレージからデータを読み込む
   useEffect(() => {
@@ -186,30 +205,85 @@ export default function Home() {
     setEditingReview(null);
   };
 
-  const handleSaveReview = (reviewData: Omit<ReviewRecord, "id" | "createdAt" | "updatedAt">) => {
-    const now = new Date().toISOString();
-    if (editingReview) {
-      // 既存のレビューを更新
-      setReviews((prev) =>
-        prev.map((r) =>
-          r.id === editingReview.id
-            ? { ...r, ...reviewData, updatedAt: now }
-            : r
-        )
-      );
-    } else {
-      // 新しいレビューを追加
-      const newReview: ReviewRecord = {
-        ...reviewData,
-        id: `review_${Date.now()}`,
-        createdAt: now,
-        updatedAt: now,
-      };
-      setReviews((prev) => [...prev, newReview]);
+  const handleSaveReview = async (reviewData: Omit<ReviewRecord, "id" | "createdAt" | "updatedAt">) => {
+    try {
+      const now = new Date().toISOString();
+      const userId = getUserId();
+
+      // サーバー側バリデーション（簡易版）
+      if (!reviewData.reviewTitle?.trim()) {
+        setToast({ message: "レビューのタイトルを入力してください", type: "error" });
+        return;
+      }
+      if (!reviewData.reviewBody?.trim()) {
+        setToast({ message: "レビュー本文を入力してください", type: "error" });
+        return;
+      }
+
+      // 既存レビューのチェック（新規投稿時）
+      if (!editingReview) {
+        const existing = getExistingReview(reviewData.movieId);
+        if (existing) {
+          setToast({ message: "この映画には既にレビューを投稿しています。編集してください。", type: "error" });
+          return;
+        }
+      }
+
+      // データ所有権チェック（編集時）
+      if (editingReview && editingReview.userId !== userId) {
+        setToast({ message: "このレビューを編集する権限がありません", type: "error" });
+        return;
+      }
+
+      if (editingReview) {
+        // 既存のレビューを更新
+        setReviews((prev) =>
+          prev.map((r) =>
+            r.id === editingReview.id
+              ? { ...r, ...reviewData, userId, updatedAt: now }
+              : r
+          )
+        );
+        setToast({ message: "レビューを更新しました", type: "success" });
+      } else {
+        // 新しいレビューを追加
+        const newReview: ReviewRecord = {
+          ...reviewData,
+          userId,
+          id: `review_${Date.now()}`,
+          createdAt: now,
+          updatedAt: now,
+        };
+        setReviews((prev) => [...prev, newReview]);
+        setToast({ message: "レビューを投稿しました", type: "success" });
+      }
+
+      setIsReviewFormOpen(false);
+      setSelectedMovie(null);
+      setEditingReview(null);
+    } catch (error) {
+      console.error("Error saving review:", error);
+      setToast({ message: "投稿に失敗しました。時間をおいてお試しください。", type: "error" });
     }
-    setIsReviewFormOpen(false);
-    setSelectedMovie(null);
-    setEditingReview(null);
+  };
+
+  const handleWriteReview = (movie: MovieSearchResult) => {
+    // 認証チェック（簡易版 - 常に認証済みとして扱う）
+    const userId = getUserId();
+
+    // 既存レビューのチェック
+    const existingReview = getExistingReview(movie.id);
+    if (existingReview) {
+      // 既存レビューがある場合は編集モードで開く
+      setSelectedMovie(movie);
+      setEditingReview(existingReview);
+      setIsReviewFormOpen(true);
+    } else {
+      // 新規レビュー
+      setSelectedMovie(movie);
+      setEditingReview(null);
+      setIsReviewFormOpen(true);
+    }
   };
 
   const handleEditReview = (review: ReviewRecord) => {
@@ -440,7 +514,7 @@ export default function Home() {
       </main>
 
       {/* レビューフォーム */}
-      {isReviewFormOpen && (
+      {isReviewFormOpen && selectedMovie && (
         <ReviewForm
           movie={selectedMovie}
           existingReview={editingReview}
@@ -450,6 +524,18 @@ export default function Home() {
             setSelectedMovie(null);
             setEditingReview(null);
           }}
+          onError={(error) => {
+            setToast({ message: error, type: "error" });
+          }}
+        />
+      )}
+
+      {/* トースト通知 */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
         />
       )}
 
@@ -458,13 +544,11 @@ export default function Home() {
         <MovieDetailModal
           movie={selectedMovieForDetail}
           isInWatchlist={isMovieInWatchlist(selectedMovieForDetail.id)}
+          existingReview={getExistingReview(selectedMovieForDetail.id)}
           onClose={() => setSelectedMovieForDetail(null)}
           onAddToWatchlist={handleAddToWatchlist}
           onRemoveFromWatchlist={handleRemoveFromWatchlist}
-          onWriteReview={(movie) => {
-            setSelectedMovieForDetail(null);
-            handleSelectMovie(movie);
-          }}
+          onWriteReview={handleWriteReview}
         />
       )}
 
