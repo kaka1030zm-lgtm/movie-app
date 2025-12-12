@@ -204,14 +204,14 @@ export default function MovieSearch({ onMovieSelect }: MovieSearchProps) {
                 <button
                   key={movie.id}
                   onClick={() => onMovieSelect(movie)}
-                  className="group flex flex-col h-full overflow-hidden rounded-lg border border-[#1a1a1a] bg-[#0a0a0a] hover:border-[#D4AF37]/50 transition-all text-left"
+                  className="group flex flex-col h-full overflow-hidden rounded-lg border border-[#1a1a1a] bg-[#0a0a0a] hover:border-[#D4AF37]/50 transition-all duration-500 text-left"
                 >
-                  <div className="relative w-full aspect-[2/3] overflow-hidden">
+                  <div className="relative w-full aspect-[2/3] overflow-hidden transition-transform duration-500 group-hover:scale-105">
                     {posterUrl ? (
                       <img
                         src={posterUrl}
                         alt={movie.title}
-                        className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
+                        className="object-cover w-full h-full transition-transform duration-500"
                       />
                     ) : (
                       <div className="w-full h-full bg-[#2a2a2a] flex flex-col items-center justify-center">

@@ -211,10 +211,12 @@ export default function RatingForm({
           {/* あらすじ */}
           {movie.overview && (
             <div className="p-6 border-b border-[#1a1a1a]">
-              <h3 className="text-sm font-semibold text-[#D4AF37] mb-2">あらすじ</h3>
-              <p className="text-sm text-gray-300 leading-relaxed whitespace-pre-wrap">
-                {movie.overview}
-              </p>
+              <h3 className="text-sm font-semibold text-[#D4AF37] mb-3">あらすじ</h3>
+              <div className="max-h-48 overflow-y-auto pr-2">
+                <p className="text-sm text-gray-300 leading-relaxed whitespace-pre-wrap">
+                  {movie.overview}
+                </p>
+              </div>
             </div>
           )}
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import MovieSearch from "./components/MovieSearch";
-import MovieCarousel from "./components/MovieCarousel";
+import PopularMoviesCarousel from "./components/PopularMoviesCarousel";
 import RatingForm from "./components/RatingForm";
 import ReviewList from "./components/ReviewList";
 import { MovieSearchResult, Review, ReviewInput } from "@/types/movie";
@@ -167,32 +167,39 @@ export default function Home() {
         </div>
 
         {/* タブコンテンツ */}
-        <div className="animate-in fade-in duration-300">
-          {activeTab === "popular" && (
-            <div>
-              {isLoadingPopular ? (
-                <div className="flex justify-center items-center py-12">
-                  <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#D4AF37] border-t-transparent"></div>
-                </div>
-              ) : (
-                <MovieCarousel
-                  movies={popularMovies}
-                  onMovieSelect={handleMovieSelect}
-                  title="人気の映画"
-                />
-              )}
-            </div>
-          )}
-
-          {activeTab === "reviews" && (
-            <div>
-              <ReviewList
-                reviews={reviews}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
+        <div className="relative">
+          <div
+            className={`transition-all duration-500 ease-in-out ${
+              activeTab === "popular"
+                ? "opacity-100 translate-x-0"
+                : "opacity-0 translate-x-8 absolute inset-0 pointer-events-none"
+            }`}
+          >
+            {isLoadingPopular ? (
+              <div className="flex justify-center items-center py-12">
+                <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#D4AF37] border-t-transparent"></div>
+              </div>
+            ) : (
+              <PopularMoviesCarousel
+                movies={popularMovies}
+                onMovieSelect={handleMovieSelect}
               />
-            </div>
-          )}
+            )}
+          </div>
+
+          <div
+            className={`transition-all duration-500 ease-in-out ${
+              activeTab === "reviews"
+                ? "opacity-100 translate-x-0"
+                : "opacity-0 -translate-x-8 absolute inset-0 pointer-events-none"
+            }`}
+          >
+            <ReviewList
+              reviews={reviews}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
+          </div>
         </div>
       </main>
 

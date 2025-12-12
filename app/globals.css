@@ -105,3 +105,33 @@ body {
 .duration-300 {
   animation-duration: 300ms;
 }
+
+/* スムーズな画面切り替え */
+.slide-in-from-left {
+  animation: slide-in-from-left 0.5s ease-out;
+}
+
+.slide-in-from-right {
+  animation: slide-in-from-right 0.5s ease-out;
+}
+
+@keyframes slide-in-from-right {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* スクロールバーを非表示にする */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}

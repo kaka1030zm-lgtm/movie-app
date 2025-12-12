@@ -1,40 +1,45 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Film } from "lucide-react";
 import { MovieSearchResult } from "@/types/movie";
 import { getPosterUrl } from "@/lib/tmdb";
 
-interface MovieCarouselProps {
+interface PopularMoviesCarouselProps {
   movies: MovieSearchResult[];
   onMovieSelect: (movie: MovieSearchResult) => void;
-  title: string;
 }
 
-export default function MovieCarousel({
+export default function PopularMoviesCarousel({
   movies,
   onMovieSelect,
-  title,
-}: MovieCarouselProps) {
+}: PopularMoviesCarouselProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
 
+  useEffect(() => {
+    checkScrollability();
+    const handleResize = () => checkScrollability();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [movies]);
+
   const checkScrollability = () => {
     if (!scrollRef.current) return;
     const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
-    setCanScrollLeft(scrollLeft > 0);
+    setCanScrollLeft(scrollLeft > 10);
     setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
   };
 
   const scroll = (direction: "left" | "right") => {
     if (!scrollRef.current) return;
-    const scrollAmount = scrollRef.current.clientWidth * 0.8;
+    const scrollAmount = scrollRef.current.clientWidth * 0.75;
     const newScrollLeft =
       direction === "left"
         ? scrollRef.current.scrollLeft - scrollAmount
         : scrollRef.current.scrollLeft + scrollAmount;
-    
+
     scrollRef.current.scrollTo({
       left: newScrollLeft,
       behavior: "smooth",
@@ -45,17 +50,18 @@ export default function MovieCarousel({
 
   return (
     <div className="relative mb-12">
-      <h3 className="text-2xl font-bold text-white mb-6">{title}</h3>
-      
+      <h3 className="text-2xl font-bold text-white mb-6">人気の映画 TOP 30</h3>
+
       <div className="relative group">
-        {/* 左矢印 */}
+        {/* 左矢印 - 高級感のあるデザイン */}
         {canScrollLeft && (
           <button
             onClick={() => scroll("left")}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-black/70 backdrop-blur-sm border border-[#D4AF37]/30 rounded-full p-3 hover:bg-[#D4AF37]/20 hover:border-[#D4AF37] transition-all duration-300 opacity-0 group-hover:opacity-100"
+            onMouseEnter={() => checkScrollability()}
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-20 bg-gradient-to-r from-black/90 via-black/80 to-transparent backdrop-blur-md border border-[#D4AF37]/40 rounded-full p-4 hover:bg-gradient-to-r hover:from-[#D4AF37]/20 hover:via-[#D4AF37]/10 hover:to-transparent hover:border-[#D4AF37] transition-all duration-500 shadow-lg shadow-[#D4AF37]/20 opacity-0 group-hover:opacity-100"
             aria-label="前へ"
           >
-            <ChevronLeft className="h-6 w-6 text-[#D4AF37]" />
+            <ChevronLeft className="h-7 w-7 text-[#D4AF37] drop-shadow-lg" />
           </button>
         )}
 
@@ -66,20 +72,25 @@ export default function MovieCarousel({
           className="flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth pb-4"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
-          {movies.map((movie) => {
+          {movies.map((movie, index) => {
             const posterUrl = getPosterUrl(movie.poster_path);
             return (
               <button
                 key={movie.id}
                 onClick={() => onMovieSelect(movie)}
-                className="flex-shrink-0 w-32 sm:w-40 group/movie"
+                className="flex-shrink-0 w-28 sm:w-36 group/movie transition-all duration-300"
               >
-                <div className="relative aspect-[2/3] overflow-hidden rounded-lg border border-[#1a1a1a] bg-[#0a0a0a] transition-all duration-300 group-hover/movie:scale-105 group-hover/movie:border-[#D4AF37]/50">
+                <div className="relative aspect-[2/3] overflow-hidden rounded-lg border border-[#1a1a1a] bg-[#0a0a0a] transition-all duration-500 group-hover/movie:scale-110 group-hover/movie:border-[#D4AF37]/60 group-hover/movie:shadow-xl group-hover/movie:shadow-[#D4AF37]/20">
+                  {/* ランキングバッジ */}
+                  <div className="absolute top-2 left-2 z-10 bg-gradient-to-br from-[#D4AF37] to-[#B8941F] text-black text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shadow-lg">
+                    {index + 1}
+                  </div>
+
                   {posterUrl ? (
                     <img
                       src={posterUrl}
                       alt={movie.title}
-                      className="object-cover w-full h-full transition-transform duration-300"
+                      className="object-cover w-full h-full transition-transform duration-500"
                       onError={(e) => {
                         e.currentTarget.style.display = "none";
                         const placeholder = e.currentTarget.nextElementSibling as HTMLElement;
@@ -98,7 +109,7 @@ export default function MovieCarousel({
                     </p>
                   </div>
                 </div>
-                <h4 className="text-sm font-medium text-white mt-2 line-clamp-2 text-left">
+                <h4 className="text-xs sm:text-sm font-medium text-white mt-2 line-clamp-2 text-left">
                   {movie.title}
                 </h4>
                 {movie.release_date && (
@@ -111,14 +122,15 @@ export default function MovieCarousel({
           })}
         </div>
 
-        {/* 右矢印 */}
+        {/* 右矢印 - 高級感のあるデザイン */}
         {canScrollRight && (
           <button
             onClick={() => scroll("right")}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-black/70 backdrop-blur-sm border border-[#D4AF37]/30 rounded-full p-3 hover:bg-[#D4AF37]/20 hover:border-[#D4AF37] transition-all duration-300 opacity-0 group-hover:opacity-100"
+            onMouseEnter={() => checkScrollability()}
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-20 bg-gradient-to-l from-black/90 via-black/80 to-transparent backdrop-blur-md border border-[#D4AF37]/40 rounded-full p-4 hover:bg-gradient-to-l hover:from-[#D4AF37]/20 hover:via-[#D4AF37]/10 hover:to-transparent hover:border-[#D4AF37] transition-all duration-500 shadow-lg shadow-[#D4AF37]/20 opacity-0 group-hover:opacity-100"
             aria-label="次へ"
           >
-            <ChevronRight className="h-6 w-6 text-[#D4AF37]" />
+            <ChevronRight className="h-7 w-7 text-[#D4AF37] drop-shadow-lg" />
           </button>
         )}
       </div>
