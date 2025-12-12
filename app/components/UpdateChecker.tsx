@@ -57,8 +57,11 @@ export default function UpdateChecker() {
           return;
         }
 
+        // windowを変数に保存して型を保持
+        const win = window;
+
         // このアプリのキャッシュのみをクリア（同じオリジンのキャッシュのみ）
-        if ("caches" in window) {
+        if ("caches" in win) {
           caches.keys().then((names) => {
             // このアプリのドメインのキャッシュのみを削除
             // caches.keys()は既に同じオリジン（ドメイン）のキャッシュのみを返すため、
@@ -69,13 +72,13 @@ export default function UpdateChecker() {
               return caches.delete(name);
             });
             Promise.all(deletePromises).then(() => {
-              if (typeof window !== "undefined") {
-                window.location.reload();
+              if (typeof win !== "undefined") {
+                win.location.reload();
               }
             });
           });
         } else {
-          window.location.reload();
+          win.location.reload();
         }
       }, 2000); // 2秒後に自動リロード
 
