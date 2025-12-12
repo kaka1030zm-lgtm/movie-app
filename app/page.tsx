@@ -31,6 +31,9 @@ export default function Home() {
   const [recommendedMovies, setRecommendedMovies] = useState<MovieSearchResult[]>([]);
   const [searchResults, setSearchResults] = useState<MovieSearchResult[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [searchPage, setSearchPage] = useState(1);
+  const [searchTotalPages, setSearchTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
@@ -576,8 +579,21 @@ export default function Home() {
   return (
     <div className="min-h-screen min-h-[100dvh] bg-[#121212] text-white">
       <Header
-        onSearchResults={setSearchResults}
-        onQueryChange={setSearchQuery}
+        onSearchResults={(results) => {
+          setSearchResults(results);
+          setSearchError(null);
+        }}
+        onQueryChange={(query) => {
+          setSearchQuery(query);
+          setSearchPage(1);
+          if (!query.trim()) {
+            setSearchResults([]);
+            setSearchError(null);
+          }
+        }}
+        onError={(error) => {
+          setSearchError(error);
+        }}
         isLoading={isLoading}
       />
       <main className="max-w-7xl mx-auto px-4 py-10 sm:px-6 lg:px-8">
@@ -757,10 +773,14 @@ export default function Home() {
                   </div>
                 ))}
               </div>
-            ) : !isLoading && !error && searchQuery.trim() ? (
+            ) : searchError && searchQuery.trim() ? (
+              <div className="rounded-lg border border-red-400/50 bg-red-400/10 p-4 text-red-400">
+                <p className="font-medium">⚠️ {searchError}</p>
+              </div>
+            ) : !isLoading && !error && searchQuery.trim() && searchResults.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <span className="mb-4 text-6xl">🎬</span>
-                <p className="text-zinc-400">検索結果が見つかりませんでした</p>
+                <p className="text-zinc-400">「{searchQuery}」の検索結果は見つかりませんでした。</p>
               </div>
             ) : activeTab === "recommended" && !searchQuery.trim() && !isLoading && displayMovies.length === 0 && isLoggedIn && watchlist.length > 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">

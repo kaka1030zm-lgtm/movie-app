@@ -25,6 +25,7 @@ export default function Header({ onSearchResults, onQueryChange, isLoading }: He
           <MovieSearch
             onSearchResults={onSearchResults}
             onQueryChange={onQueryChange}
+            onError={onError}
             isLoading={isLoading}
           />
         </div>
