@@ -254,7 +254,7 @@ export default function Home() {
   }, [activeTab, popularMovies, recommendedMovies]);
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen min-h-[100dvh] bg-black text-white" style={{ backgroundColor: '#000000', color: '#ffffff' }}>
       <Header />
       <main className="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
         {/* タブ */}
