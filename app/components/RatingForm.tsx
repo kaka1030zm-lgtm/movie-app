@@ -249,7 +249,6 @@ export default function RatingForm({
               {/* ジャンル */}
               {movieDetails?.genres && movieDetails.genres.length > 0 && (
                 <div className="flex items-center gap-2 flex-wrap mb-2">
-                  <Tags className="h-4 w-4 text-[#D4AF37] flex-shrink-0" />
                   <div className="flex flex-wrap gap-2">
                     {movieDetails.genres.map((genre) => (
                       <span
@@ -274,8 +273,7 @@ export default function RatingForm({
               {/* 主演 */}
               {movieDetails?.cast && movieDetails.cast.length > 0 && (
                 <div className="flex items-center gap-2 text-sm text-gray-300 mb-2">
-                  <Users className="h-4 w-4 text-gray-500" />
-                  <span className="text-gray-500">主演:</span>
+                  <Users className="h-4 w-4 text-[#D4AF37]" />
                   <span>{movieDetails.cast.map((c) => c.name).join(", ")}</span>
                 </div>
               )}
