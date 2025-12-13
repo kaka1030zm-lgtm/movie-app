@@ -8,9 +8,10 @@ interface ReviewListProps {
   reviews: Review[];
   onEdit: (review: Review) => void;
   onDelete: (reviewId: string) => void;
+  onMovieClick?: (review: Review) => void;
 }
 
-export default function ReviewList({ reviews, onEdit, onDelete }: ReviewListProps) {
+export default function ReviewList({ reviews, onEdit, onDelete, onMovieClick }: ReviewListProps) {
   if (reviews.length === 0) {
     return (
       <div className="text-center py-12">
@@ -30,7 +31,10 @@ export default function ReviewList({ reviews, onEdit, onDelete }: ReviewListProp
             className="group flex flex-col h-full overflow-hidden rounded-lg border border-[#1a1a1a] bg-[#0a0a0a] hover:border-[#D4AF37]/50 transition-all duration-300"
           >
             {/* 画像エリア */}
-            <div className="relative w-full aspect-[2/3] overflow-hidden rounded-t-lg transition-transform duration-500 group-hover:scale-105">
+            <button
+              onClick={() => onMovieClick && onMovieClick(review)}
+              className="relative w-full aspect-[2/3] overflow-hidden rounded-t-lg transition-transform duration-500 group-hover:scale-105"
+            >
               {posterUrl ? (
                 <img
                   src={posterUrl}
@@ -50,14 +54,17 @@ export default function ReviewList({ reviews, onEdit, onDelete }: ReviewListProp
               <div className="absolute top-3 left-3 bg-black/70 backdrop-blur-sm rounded-full px-3 py-1.5 flex items-center gap-1">
                 <Star className="h-4 w-4 fill-[#D4AF37] text-[#D4AF37]" />
                 <span className="text-sm font-semibold text-white">
-                  {review.overall_star_rating}/5
+                  {review.overall_star_rating.toFixed(1)}/5
                 </span>
               </div>
 
               {/* 操作ボタン */}
               <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                 <button
-                  onClick={() => onEdit(review)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit(review);
+                  }}
                   className="bg-black/70 backdrop-blur-sm rounded-full p-2 hover:bg-black/90 transition-colors"
                   title="編集"
                 >
@@ -75,7 +82,7 @@ export default function ReviewList({ reviews, onEdit, onDelete }: ReviewListProp
                   <Trash2 className="h-4 w-4 text-white" />
                 </button>
               </div>
-            </div>
+            </button>
 
             {/* テキストエリア */}
             <div className="flex-1 p-4 flex flex-col">

@@ -31,6 +31,22 @@ export interface TMDBMovie {
   media_type?: "movie" | "tv" | "person";
 }
 
+export interface TMDBProvider {
+  provider_id: number;
+  provider_name: string;
+  logo_path: string | null;
+}
+
+export interface TMDBWatchProviders {
+  results?: {
+    JP?: {
+      flatrate?: TMDBProvider[];
+      buy?: TMDBProvider[];
+      rent?: TMDBProvider[];
+    };
+  };
+}
+
 export interface TMDBMovieDetails extends TMDBMovie {
   genres: TMDBGenre[];
   backdrop_path?: string | null;
@@ -38,6 +54,7 @@ export interface TMDBMovieDetails extends TMDBMovie {
     cast: TMDBPerson[];
     crew: TMDBPerson[];
   };
+  watch_providers?: TMDBWatchProviders;
 }
 
 export interface TMDBSearchResponse {
@@ -157,7 +174,7 @@ export async function discoverMoviesByGenres(
     .slice(0, 20);
 }
 
-// 映画詳細を取得（ジャンル、監督、主演含む）
+// 映画詳細を取得（ジャンル、監督、主演、配信情報含む）
 export async function getMovieDetails(
   movieId: number,
   mediaType: "movie" | "tv" = "movie"
@@ -166,12 +183,15 @@ export async function getMovieDetails(
     throw new Error("TMDB API key is not set");
   }
 
-  const [detailsResponse, creditsResponse] = await Promise.all([
+  const [detailsResponse, creditsResponse, watchProvidersResponse] = await Promise.all([
     fetch(
       `${TMDB_BASE_URL}/${mediaType}/${movieId}?api_key=${TMDB_API_KEY}&language=ja-JP`
     ),
     fetch(
       `${TMDB_BASE_URL}/${mediaType}/${movieId}/credits?api_key=${TMDB_API_KEY}&language=ja-JP`
+    ),
+    fetch(
+      `${TMDB_BASE_URL}/${mediaType}/${movieId}/watch/providers?api_key=${TMDB_API_KEY}`
     ),
   ]);
 
@@ -181,10 +201,12 @@ export async function getMovieDetails(
 
   const details = await detailsResponse.json();
   const credits = creditsResponse.ok ? await creditsResponse.json() : null;
+  const watchProviders = watchProvidersResponse.ok ? await watchProvidersResponse.json() : null;
 
   return {
     ...details,
     credits: credits || undefined,
+    watch_providers: watchProviders || undefined,
   };
 }
 

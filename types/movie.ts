@@ -44,7 +44,7 @@ export interface Review {
   movie_poster_path: string | null;
   movie_release_date: string | null;
   ratings: RatingCriteria;
-  overall_star_rating: number; // 総合評価を星評価に変換 (1-5)
+  overall_star_rating: number; // 総合評価を星評価に変換 (0.5-5.0、0.1単位)
   comment: string | null;
   created_at: string;
   updated_at: string;

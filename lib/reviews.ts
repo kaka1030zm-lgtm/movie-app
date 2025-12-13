@@ -3,14 +3,13 @@ import { Review, ReviewInput, RatingCriteria } from "@/types/movie";
 
 const STORAGE_KEY = "movie_ratings_reviews";
 
-// 総合評価（1-10）を星評価（1-5）に変換
+// 総合評価（1-10）を星評価（1-5）に変換（0.1単位）
 export function convertToStarRating(overallRating: number): number {
-  // 10段階を5段階に変換: 1-2→1, 3-4→2, 5-6→3, 7-8→4, 9-10→5
-  if (overallRating <= 2) return 1;
-  if (overallRating <= 4) return 2;
-  if (overallRating <= 6) return 3;
-  if (overallRating <= 8) return 4;
-  return 5;
+  // 10段階を5段階に変換（0.1単位で）
+  // 1-10の範囲を0.5-5.0の範囲に線形変換
+  const starRating = (overallRating / 10) * 5;
+  // 0.1単位で丸める
+  return Math.round(starRating * 10) / 10;
 }
 
 // 評価項目の平均を計算

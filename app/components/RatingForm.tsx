@@ -47,6 +47,9 @@ export default function RatingForm({
     director?: { name: string } | null;
     cast?: { name: string }[];
     backdrop_path?: string | null;
+    watch_providers?: {
+      flatrate?: { provider_id: number; provider_name: string; logo_path: string | null }[];
+    };
   } | null>(null);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const [isInWatchlistState, setIsInWatchlistState] = useState(false);
@@ -97,11 +100,13 @@ export default function RatingForm({
         );
         const mainCast = details.credits?.cast?.slice(0, 3) || [];
 
+        const jpProviders = details.watch_providers?.results?.JP;
         setMovieDetails({
           genres: details.genres || [],
           director: director ? { name: director.name } : null,
           cast: mainCast.map((person) => ({ name: person.name })),
           backdrop_path: details.backdrop_path,
+          watch_providers: jpProviders?.flatrate ? { flatrate: jpProviders.flatrate } : undefined,
         });
       })
       .catch((error) => {
@@ -259,10 +264,36 @@ export default function RatingForm({
 
               {/* 主演 */}
               {movieDetails?.cast && movieDetails.cast.length > 0 && (
-                <div className="flex items-center gap-2 text-sm text-gray-300">
+                <div className="flex items-center gap-2 text-sm text-gray-300 mb-2">
                   <Users className="h-4 w-4 text-gray-500" />
                   <span className="text-gray-500">主演:</span>
                   <span>{movieDetails.cast.map((c) => c.name).join(", ")}</span>
+                </div>
+              )}
+
+              {/* 配信情報 */}
+              {movieDetails?.watch_providers?.flatrate && movieDetails.watch_providers.flatrate.length > 0 && (
+                <div className="flex items-center gap-2 flex-wrap mt-2">
+                  <span className="text-xs text-gray-500">配信:</span>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {movieDetails.watch_providers.flatrate.map((provider) => (
+                      <div
+                        key={provider.provider_id}
+                        className="w-8 h-8 rounded bg-white/10 flex items-center justify-center overflow-hidden"
+                        title={provider.provider_name}
+                      >
+                        {provider.logo_path ? (
+                          <img
+                            src={`https://image.tmdb.org/t/p/w45${provider.logo_path}`}
+                            alt={provider.provider_name}
+                            className="w-full h-full object-contain"
+                          />
+                        ) : (
+                          <span className="text-xs text-gray-400">{provider.provider_name.charAt(0)}</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -324,19 +355,29 @@ export default function RatingForm({
               </label>
               <div className="flex items-center gap-3 mb-4">
                 <div className="flex items-center gap-1">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Star
-                      key={star}
-                      className={`h-8 w-8 transition-all ${
-                        star <= starRating
-                          ? "fill-[#D4AF37] text-[#D4AF37]"
-                          : "text-gray-600"
-                      }`}
-                    />
-                  ))}
+                  {[1, 2, 3, 4, 5].map((star) => {
+                    const isFilled = star <= Math.floor(starRating);
+                    const isHalfFilled = star === Math.ceil(starRating) && starRating % 1 >= 0.5 && starRating % 1 < 1;
+                    return (
+                      <div key={star} className="relative">
+                        <Star
+                          className={`h-8 w-8 transition-all ${
+                            isFilled
+                              ? "fill-[#D4AF37] text-[#D4AF37]"
+                              : "text-gray-600"
+                          }`}
+                        />
+                        {isHalfFilled && (
+                          <div className="absolute inset-0 overflow-hidden" style={{ width: "50%" }}>
+                            <Star className="h-8 w-8 fill-[#D4AF37] text-[#D4AF37]" />
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
                 <span className="text-lg font-semibold text-[#D4AF37] ml-4">
-                  {starRating}/5 ({overallRating}/10)
+                  {starRating.toFixed(1)}/5 ({overallRating}/10)
                 </span>
               </div>
               <div className="space-y-2">

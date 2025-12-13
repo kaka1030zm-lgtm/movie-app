@@ -6,6 +6,7 @@ import PopularMoviesCarousel from "./components/PopularMoviesCarousel";
 import RatingForm from "./components/RatingForm";
 import ReviewList from "./components/ReviewList";
 import WatchlistList from "./components/WatchlistList";
+import ConfirmModal from "./components/ConfirmModal";
 import { MovieSearchResult, Review, ReviewInput } from "@/types/movie";
 import {
   getAllReviews,
@@ -34,6 +35,10 @@ export default function Home() {
   const [userCountry, setUserCountry] = useState<string>("JP");
   const [editingReview, setEditingReview] = useState<Review | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; reviewId: string | null }>({
+    isOpen: false,
+    reviewId: null,
+  });
 
   // レビューを読み込む
   useEffect(() => {
@@ -202,9 +207,14 @@ export default function Home() {
   };
 
   const handleDelete = (reviewId: string) => {
-    if (deleteReview(reviewId)) {
+    setDeleteConfirm({ isOpen: true, reviewId });
+  };
+
+  const confirmDelete = () => {
+    if (deleteConfirm.reviewId && deleteReview(deleteConfirm.reviewId)) {
       loadReviews();
     }
+    setDeleteConfirm({ isOpen: false, reviewId: null });
   };
 
   const handleWatchlistMovieSelect = (item: WatchlistItem) => {
@@ -223,6 +233,17 @@ export default function Home() {
     if (removeFromWatchlist(movieId)) {
       loadWatchlist();
     }
+  };
+
+  const handleReviewMovieClick = (review: Review) => {
+    const movie: MovieSearchResult = {
+      id: review.movie_id,
+      title: review.movie_title,
+      poster_path: review.movie_poster_path,
+      release_date: review.movie_release_date,
+      overview: null,
+    };
+    handleMovieSelect(movie);
   };
 
   return (
@@ -339,6 +360,7 @@ export default function Home() {
               reviews={reviews}
               onEdit={handleEdit}
               onDelete={handleDelete}
+              onMovieClick={handleReviewMovieClick}
             />
           </div>
 
@@ -375,6 +397,17 @@ export default function Home() {
           onWatchlistChange={loadWatchlist}
         />
       )}
+
+      {/* 削除確認モーダル */}
+      <ConfirmModal
+        isOpen={deleteConfirm.isOpen}
+        title="レビューを削除"
+        message="このレビューを削除しますか？この操作は取り消せません。"
+        confirmText="削除"
+        cancelText="キャンセル"
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteConfirm({ isOpen: false, reviewId: null })}
+      />
     </div>
   );
 }
