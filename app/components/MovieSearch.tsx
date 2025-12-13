@@ -130,22 +130,27 @@ export default function MovieSearch({ onMovieSelect }: MovieSearchProps) {
         </div>
       </div>
 
-      {/* フィルター */}
+      {/* フィルター - 高級感のあるデザイン */}
       {query.trim() && (
         <div className="mb-6">
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#1a1a1a] bg-[#0a0a0a] text-white hover:border-[#D4AF37]/50 transition-colors"
+            className="group flex items-center gap-2 px-5 py-3 rounded-full border border-[#1a1a1a] bg-gradient-to-r from-[#0a0a0a] to-[#1a1a1a] text-white hover:border-[#D4AF37]/60 hover:bg-gradient-to-r hover:from-[#D4AF37]/10 hover:to-[#D4AF37]/5 transition-all duration-300 shadow-lg hover:shadow-[#D4AF37]/20"
           >
-            <Filter className="h-4 w-4" />
-            <span>フィルター</span>
+            <Filter className={`h-5 w-5 transition-transform duration-300 ${showFilters ? "rotate-180 text-[#D4AF37]" : "text-gray-400 group-hover:text-[#D4AF37]"}`} />
+            <span className="font-medium">フィルター</span>
+            {(selectedGenre || selectedYear) && (
+              <span className="ml-2 px-2 py-0.5 rounded-full bg-[#D4AF37]/20 text-[#D4AF37] text-xs font-semibold">
+                {[selectedGenre && "ジャンル", selectedYear && "年代"].filter(Boolean).length}
+              </span>
+            )}
           </button>
 
           {showFilters && (
-            <div className="mt-4 p-4 rounded-lg border border-[#1a1a1a] bg-[#0a0a0a] space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
+            <div className="mt-4 p-6 rounded-2xl border border-[#1a1a1a] bg-gradient-to-br from-[#0a0a0a] via-[#0f0f0f] to-[#0a0a0a] backdrop-blur-sm shadow-2xl space-y-6 animate-in fade-in zoom-in-95 duration-300">
               {/* ジャンル */}
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-sm font-semibold text-[#D4AF37] mb-3 uppercase tracking-wide">
                   ジャンル
                 </label>
                 <select
@@ -153,9 +158,9 @@ export default function MovieSearch({ onMovieSelect }: MovieSearchProps) {
                   onChange={(e) =>
                     setSelectedGenre(e.target.value ? parseInt(e.target.value) : null)
                   }
-                  className="w-full rounded-lg border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-2 text-white focus:border-[#D4AF37] focus:outline-none"
+                  className="w-full rounded-xl border-2 border-[#1a1a1a] bg-[#0a0a0a]/80 backdrop-blur-sm px-5 py-3 pr-12 text-white focus:border-[#D4AF37] focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/30 transition-all duration-300 appearance-none cursor-pointer hover:border-[#D4AF37]/50"
                 >
-                  <option value="">すべて</option>
+                  <option value="">すべてのジャンル</option>
                   {genres.map((genre) => (
                     <option key={genre.id} value={genre.id}>
                       {genre.name}
@@ -166,7 +171,7 @@ export default function MovieSearch({ onMovieSelect }: MovieSearchProps) {
 
               {/* 年代 */}
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-sm font-semibold text-[#D4AF37] mb-3 uppercase tracking-wide">
                   公開年
                 </label>
                 <select
@@ -174,9 +179,9 @@ export default function MovieSearch({ onMovieSelect }: MovieSearchProps) {
                   onChange={(e) =>
                     setSelectedYear(e.target.value ? parseInt(e.target.value) : null)
                   }
-                  className="w-full rounded-lg border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-2 text-white focus:border-[#D4AF37] focus:outline-none"
+                  className="w-full rounded-xl border-2 border-[#1a1a1a] bg-[#0a0a0a]/80 backdrop-blur-sm px-5 py-3 pr-12 text-white focus:border-[#D4AF37] focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/30 transition-all duration-300 appearance-none cursor-pointer hover:border-[#D4AF37]/50"
                 >
-                  <option value="">すべて</option>
+                  <option value="">すべての年代</option>
                   {years.map((year) => (
                     <option key={year} value={year}>
                       {year}年
@@ -184,6 +189,19 @@ export default function MovieSearch({ onMovieSelect }: MovieSearchProps) {
                   ))}
                 </select>
               </div>
+
+              {/* フィルターリセットボタン */}
+              {(selectedGenre || selectedYear) && (
+                <button
+                  onClick={() => {
+                    setSelectedGenre(null);
+                    setSelectedYear(null);
+                  }}
+                  className="w-full rounded-xl border-2 border-[#1a1a1a] bg-[#0a0a0a]/50 px-5 py-3 text-gray-400 hover:border-[#D4AF37]/50 hover:text-[#D4AF37] transition-all duration-300 font-medium"
+                >
+                  フィルターをリセット
+                </button>
+              )}
             </div>
           )}
         </div>
