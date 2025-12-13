@@ -200,18 +200,18 @@ export default function RatingForm({
       {/* 背景画像 - 映画のシーン（backdrop）を優先、なければポスター */}
       {backgroundImageUrl && (
         <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat pointer-events-none"
           style={{
             backgroundImage: `url(${backgroundImageUrl})`,
             backgroundPosition: "center",
             backgroundSize: "cover",
           }}
         >
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-md" />
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-md pointer-events-none" />
         </div>
       )}
       {!backgroundImageUrl && (
-        <div className="absolute inset-0 bg-black/90 backdrop-blur-sm" />
+        <div className="absolute inset-0 bg-black/90 backdrop-blur-sm pointer-events-none" />
       )}
 
       <div
