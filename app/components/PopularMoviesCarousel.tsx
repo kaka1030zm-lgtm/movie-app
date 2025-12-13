@@ -113,9 +113,11 @@ export default function PopularMoviesCarousel({
                     </p>
                   </div>
                 </div>
-                <h4 className="text-xs sm:text-sm font-medium text-white mt-2 line-clamp-2 text-left">
-                  {movie.title}
-                </h4>
+                <div className="mt-2 min-h-[2.5rem]">
+                  <h4 className="text-xs sm:text-sm font-medium text-white line-clamp-2 text-left">
+                    {movie.title}
+                  </h4>
+                </div>
                 {movie.release_date && (
                   <p className="text-xs text-gray-500 mt-1">
                     {new Date(movie.release_date).getFullYear()}

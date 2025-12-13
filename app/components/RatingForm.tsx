@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Star, X, Film, Calendar, Users, Tags, Bookmark, BookmarkCheck } from "lucide-react";
+import { Star, X, Film, Users, Tags, Bookmark, BookmarkCheck } from "lucide-react";
 import { MovieSearchResult, RatingCriteria, ReviewInput } from "@/types/movie";
 import { getPosterUrl, getBackdropUrl, getMovieDetails } from "@/lib/tmdb";
 import { calculateOverallRating, convertToStarRating } from "@/lib/reviews";
@@ -54,6 +54,7 @@ export default function RatingForm({
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const [isInWatchlistState, setIsInWatchlistState] = useState(false);
   const [isWatchlistLoading, setIsWatchlistLoading] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
 
   // 背景スクロールを無効化
   useEffect(() => {
@@ -175,31 +176,38 @@ export default function RatingForm({
   const backdropUrl = getBackdropUrl(movieDetails?.backdrop_path || null);
   const backgroundImageUrl = backdropUrl || posterUrl;
   const releaseDate = movie.release_date
-    ? new Date(movie.release_date).toLocaleDateString("ja-JP", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      })
+    ? movie.release_date.split("T")[0] // YYYY-MM-DD形式
     : null;
+
+  const handleCancel = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      onCancel();
+    }, 300);
+  };
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-300"
+      className={`fixed inset-0 z-50 flex items-center justify-center p-4 transition-opacity duration-300 ${
+        isClosing ? "opacity-0" : "opacity-100"
+      }`}
       onClick={(e) => {
         if (e.target === e.currentTarget) {
-          onCancel();
+          handleCancel();
         }
       }}
     >
-      {/* 背景画像 */}
+      {/* 背景画像 - 映画のシーン（backdrop）を優先、なければポスター */}
       {backgroundImageUrl && (
         <div
-          className="absolute inset-0 bg-cover bg-center"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
             backgroundImage: `url(${backgroundImageUrl})`,
+            backgroundPosition: "center",
+            backgroundSize: "cover",
           }}
         >
-          <div className="absolute inset-0 bg-black/85 backdrop-blur-sm" />
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-md" />
         </div>
       )}
       {!backgroundImageUrl && (
@@ -207,7 +215,9 @@ export default function RatingForm({
       )}
 
       <div
-        className="relative bg-[#0a0a0a]/95 backdrop-blur-md border border-[#1a1a1a] rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col animate-in zoom-in-95 duration-300 shadow-2xl"
+        className={`relative bg-[#0a0a0a]/95 backdrop-blur-md border border-[#1a1a1a] rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col transition-all duration-300 shadow-2xl ${
+          isClosing ? "opacity-0 scale-95" : "opacity-100 scale-100"
+        }`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* ヘッダー */}
@@ -231,9 +241,8 @@ export default function RatingForm({
 
               {/* 公開日 */}
               {releaseDate && (
-                <div className="flex items-center gap-2 text-sm text-gray-400 mb-2">
-                  <Calendar className="h-4 w-4" />
-                  <span>{releaseDate}</span>
+                <div className="text-sm text-gray-400 mb-2">
+                  {releaseDate}
                 </div>
               )}
 
@@ -444,13 +453,13 @@ export default function RatingForm({
 
             {/* ボタン */}
             <div className="flex gap-3 pt-4">
-              <button
-                type="button"
-                onClick={onCancel}
-                className="flex-1 rounded-lg border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3 text-white hover:bg-[#1a1a1a] transition-colors"
-              >
-                キャンセル
-              </button>
+            <button
+              type="button"
+              onClick={handleCancel}
+              className="flex-1 rounded-lg border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-3 text-white hover:bg-[#1a1a1a] transition-colors"
+            >
+              キャンセル
+            </button>
               <button
                 type="submit"
                 className="flex-1 rounded-lg bg-[#D4AF37] px-4 py-3 text-black font-semibold hover:bg-[#B8941F] transition-colors"

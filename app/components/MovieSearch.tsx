@@ -206,7 +206,7 @@ export default function MovieSearch({ onMovieSelect }: MovieSearchProps) {
                   onClick={() => onMovieSelect(movie)}
                   className="group flex flex-col h-full overflow-hidden rounded-lg border border-[#1a1a1a] bg-[#0a0a0a] hover:border-[#D4AF37]/50 transition-all duration-500 text-left"
                 >
-                  <div className="relative w-full aspect-[2/3] overflow-hidden rounded-lg transition-transform duration-500 group-hover:scale-105">
+                  <div className="relative w-full aspect-[2/3] overflow-hidden rounded-lg transition-transform duration-500 group-hover:scale-105 origin-center">
                     {posterUrl ? (
                       <img
                         src={posterUrl}
@@ -222,20 +222,20 @@ export default function MovieSearch({ onMovieSelect }: MovieSearchProps) {
                       </div>
                     )}
                   </div>
-                  <div className="flex-1 p-4 flex flex-col">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="text-sm font-semibold text-white line-clamp-2 flex-1">
+                  <div className="flex-1 p-4 flex flex-col min-h-[80px]">
+                    <div className="flex items-start gap-2 mb-1">
+                      <h3 className="text-sm font-semibold text-white line-clamp-2 flex-1 min-h-[2.5rem]">
                         {movie.title}
                       </h3>
                       {movie.media_type && (
-                        <span className="text-xs px-2 py-0.5 rounded bg-[#D4AF37]/20 text-[#D4AF37] border border-[#D4AF37]/30 flex-shrink-0">
+                        <span className="text-xs px-2 py-0.5 rounded bg-[#D4AF37]/20 text-[#D4AF37] border border-[#D4AF37]/30 flex-shrink-0 mt-0.5">
                           {movie.media_type === "movie" ? "映画" : "ドラマ"}
                         </span>
                       )}
                     </div>
                     {movie.release_date && (
                       <p className="text-xs text-gray-500 mt-1">
-                        {new Date(movie.release_date).getFullYear()}
+                        {movie.release_date.split("-")[0]}
                       </p>
                     )}
                   </div>

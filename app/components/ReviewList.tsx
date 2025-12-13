@@ -33,7 +33,7 @@ export default function ReviewList({ reviews, onEdit, onDelete, onMovieClick }: 
             {/* 画像エリア */}
             <button
               onClick={() => onMovieClick && onMovieClick(review)}
-              className="relative w-full aspect-[2/3] overflow-hidden rounded-t-lg transition-transform duration-500 group-hover:scale-105"
+              className="relative w-full aspect-[2/3] overflow-hidden rounded-t-lg transition-transform duration-500 group-hover:scale-105 origin-center"
             >
               {posterUrl ? (
                 <img
@@ -85,8 +85,8 @@ export default function ReviewList({ reviews, onEdit, onDelete, onMovieClick }: 
             </button>
 
             {/* テキストエリア */}
-            <div className="flex-1 p-4 flex flex-col">
-              <h3 className="text-lg font-semibold text-white mb-2 line-clamp-2">
+            <div className="flex-1 p-4 flex flex-col min-h-[120px]">
+              <h3 className="text-sm sm:text-base font-semibold text-white mb-2 line-clamp-2 min-h-[2.5rem]">
                 {review.movie_title}
               </h3>
 
