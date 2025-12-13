@@ -33,6 +33,7 @@ export interface TMDBMovie {
 
 export interface TMDBMovieDetails extends TMDBMovie {
   genres: TMDBGenre[];
+  backdrop_path?: string | null;
   credits?: {
     cast: TMDBPerson[];
     crew: TMDBPerson[];
@@ -55,6 +56,17 @@ export function getPosterUrl(posterPath: string | null | undefined): string | nu
     return posterPath;
   }
   return `${TMDB_IMAGE_BASE}${posterPath}`;
+}
+
+// バックドロップURLを生成
+export function getBackdropUrl(backdropPath: string | null | undefined): string | null {
+  if (!backdropPath || backdropPath.trim() === "") {
+    return null;
+  }
+  if (backdropPath.startsWith("http://") || backdropPath.startsWith("https://")) {
+    return backdropPath;
+  }
+  return `https://image.tmdb.org/t/p/w1280${backdropPath}`;
 }
 
 // 全メディアタイプで検索（映画・ドラマ）
@@ -94,17 +106,18 @@ export async function searchMovies(query: string, page: number = 1): Promise<TMD
 }
 
 // 人気映画を取得（上位30位 = 2ページ分）
-export async function getPopularMovies(): Promise<TMDBMovie[]> {
+export async function getPopularMovies(region?: string): Promise<TMDBMovie[]> {
   if (!TMDB_API_KEY) {
     throw new Error("TMDB API key is not set");
   }
 
+  const regionParam = region ? `&region=${region}` : "";
   const [page1, page2] = await Promise.all([
     fetch(
-      `${TMDB_BASE_URL}/movie/popular?api_key=${TMDB_API_KEY}&language=ja-JP&page=1`
+      `${TMDB_BASE_URL}/movie/popular?api_key=${TMDB_API_KEY}&language=ja-JP&page=1${regionParam}`
     ),
     fetch(
-      `${TMDB_BASE_URL}/movie/popular?api_key=${TMDB_API_KEY}&language=ja-JP&page=2`
+      `${TMDB_BASE_URL}/movie/popular?api_key=${TMDB_API_KEY}&language=ja-JP&page=2${regionParam}`
     ),
   ]);
 
@@ -118,6 +131,30 @@ export async function getPopularMovies(): Promise<TMDBMovie[]> {
   // 2ページ分を結合して30件返す
   const allMovies = [...(data1.results || []), ...(data2.results || [])];
   return allMovies.slice(0, 30);
+}
+
+// ジャンルIDで映画を検索
+export async function discoverMoviesByGenres(
+  genreIds: number[],
+  excludeMovieIds: number[] = []
+): Promise<TMDBMovie[]> {
+  if (!TMDB_API_KEY || genreIds.length === 0) {
+    return [];
+  }
+
+  const genreParam = genreIds.join(",");
+  const response = await fetch(
+    `${TMDB_BASE_URL}/discover/movie?api_key=${TMDB_API_KEY}&language=ja-JP&with_genres=${genreParam}&sort_by=popularity.desc&page=1`
+  );
+
+  if (!response.ok) {
+    return [];
+  }
+
+  const data = await response.json();
+  return (data.results || [])
+    .filter((movie: TMDBMovie) => !excludeMovieIds.includes(movie.id))
+    .slice(0, 20);
 }
 
 // 映画詳細を取得（ジャンル、監督、主演含む）

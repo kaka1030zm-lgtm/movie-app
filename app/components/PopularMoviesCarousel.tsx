@@ -8,11 +8,13 @@ import { getPosterUrl } from "@/lib/tmdb";
 interface PopularMoviesCarouselProps {
   movies: MovieSearchResult[];
   onMovieSelect: (movie: MovieSearchResult) => void;
+  title?: string;
 }
 
 export default function PopularMoviesCarousel({
   movies,
   onMovieSelect,
+  title,
 }: PopularMoviesCarouselProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -50,7 +52,9 @@ export default function PopularMoviesCarousel({
 
   return (
     <div className="relative mb-12">
-      <h3 className="text-2xl font-bold text-white mb-6">人気の映画 TOP 30</h3>
+      <h3 className="text-2xl font-bold text-white mb-6">
+        {title || "人気の映画 TOP 30"}
+      </h3>
 
       <div className="relative group">
         {/* 左矢印 - 高級感のあるデザイン */}

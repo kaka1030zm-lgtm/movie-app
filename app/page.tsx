@@ -5,6 +5,7 @@ import MovieSearch from "./components/MovieSearch";
 import PopularMoviesCarousel from "./components/PopularMoviesCarousel";
 import RatingForm from "./components/RatingForm";
 import ReviewList from "./components/ReviewList";
+import WatchlistList from "./components/WatchlistList";
 import { MovieSearchResult, Review, ReviewInput } from "@/types/movie";
 import {
   getAllReviews,
@@ -14,15 +15,23 @@ import {
   getReviewByMovieId,
 } from "@/lib/reviews";
 import { getPopularMovies } from "@/lib/tmdb";
+import { getWatchlist, removeFromWatchlist, WatchlistItem } from "@/lib/watchlist";
+import { getRecommendedMovies } from "@/lib/recommendations";
 
-type TabType = "popular" | "reviews";
+type TabType = "popular" | "reviews" | "watchlist";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<TabType>("popular");
   const [selectedMovie, setSelectedMovie] = useState<MovieSearchResult | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [popularMovies, setPopularMovies] = useState<MovieSearchResult[]>([]);
+  const [regionalMovies, setRegionalMovies] = useState<MovieSearchResult[]>([]);
+  const [recommendedMovies, setRecommendedMovies] = useState<MovieSearchResult[]>([]);
+  const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
   const [isLoadingPopular, setIsLoadingPopular] = useState(false);
+  const [isLoadingRegional, setIsLoadingRegional] = useState(false);
+  const [isLoadingRecommended, setIsLoadingRecommended] = useState(false);
+  const [userCountry, setUserCountry] = useState<string>("JP");
   const [editingReview, setEditingReview] = useState<Review | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
 
@@ -31,10 +40,34 @@ export default function Home() {
     loadReviews();
   }, []);
 
+  // ユーザーの国を取得（簡易版：デフォルトJP）
+  useEffect(() => {
+    // 実際の実装では、IPから国を取得するか、ユーザー設定から取得
+    // ここではデフォルトでJPを使用
+    setUserCountry("JP");
+  }, []);
+
   // 人気映画を読み込む
   useEffect(() => {
     loadPopularMovies();
   }, []);
+
+  // 国内人気映画を読み込む
+  useEffect(() => {
+    if (userCountry && popularMovies.length > 0) {
+      loadRegionalMovies();
+    }
+  }, [userCountry, popularMovies]);
+
+  // 見たいリストを読み込む
+  useEffect(() => {
+    loadWatchlist();
+  }, []);
+
+  // おすすめ映画を読み込む
+  useEffect(() => {
+    loadRecommendedMovies();
+  }, [watchlist, popularMovies]);
 
   const loadReviews = () => {
     const allReviews = getAllReviews();
@@ -67,6 +100,62 @@ export default function Home() {
       console.error("Error loading popular movies:", error);
     } finally {
       setIsLoadingPopular(false);
+    }
+  };
+
+  const loadWatchlist = () => {
+    const items = getWatchlist();
+    setWatchlist(items.sort((a, b) => 
+      new Date(b.added_at).getTime() - new Date(a.added_at).getTime()
+    ));
+  };
+
+  const loadRegionalMovies = async () => {
+    setIsLoadingRegional(true);
+    try {
+      const movies = await getPopularMovies(userCountry); // 国内人気映画
+      const popularMovieIds = popularMovies.map((m) => m.id);
+      // 世界の人気映画と重複しないようにフィルター
+      const filtered = movies
+        .filter((movie) => !popularMovieIds.includes(movie.id))
+        .map((movie) => ({
+          id: movie.id,
+          title: movie.title || movie.name || "",
+          poster_path: movie.poster_path,
+          release_date: movie.release_date || movie.first_air_date || null,
+          overview: movie.overview,
+          vote_average: movie.vote_average,
+          popularity: movie.popularity,
+          genres: movie.genres,
+          media_type: movie.media_type as "movie" | "tv",
+        }));
+      setRegionalMovies(filtered.slice(0, 30));
+    } catch (error) {
+      console.error("Error loading regional movies:", error);
+    } finally {
+      setIsLoadingRegional(false);
+    }
+  };
+
+  const loadRecommendedMovies = async () => {
+    if (watchlist.length === 0) {
+      setRecommendedMovies([]);
+      return;
+    }
+
+    setIsLoadingRecommended(true);
+    try {
+      // 人気映画と国内映画のIDを収集
+      const popularMovieIds = popularMovies.map((m) => m.id);
+      const regionalMovieIds = regionalMovies.map((m) => m.id);
+      const excludeIds = [...popularMovieIds, ...regionalMovieIds];
+
+      const movies = await getRecommendedMovies(excludeIds);
+      setRecommendedMovies(movies);
+    } catch (error) {
+      console.error("Error loading recommended movies:", error);
+    } finally {
+      setIsLoadingRecommended(false);
     }
   };
 
@@ -118,6 +207,24 @@ export default function Home() {
     }
   };
 
+  const handleWatchlistMovieSelect = (item: WatchlistItem) => {
+    const movie: MovieSearchResult = {
+      id: item.id,
+      title: item.title,
+      poster_path: item.poster_path,
+      release_date: item.release_date,
+      overview: item.overview,
+      media_type: item.media_type,
+    };
+    handleMovieSelect(movie);
+  };
+
+  const handleWatchlistRemove = (movieId: number) => {
+    if (removeFromWatchlist(movieId)) {
+      loadWatchlist();
+    }
+  };
+
   return (
     <div className="min-h-screen bg-black text-white">
       {/* ヘッダー */}
@@ -163,6 +270,19 @@ export default function Home() {
                 <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#D4AF37] animate-in slide-in-from-left duration-300" />
               )}
             </button>
+            <button
+              onClick={() => setActiveTab("watchlist")}
+              className={`px-6 py-3 font-medium transition-all duration-300 relative ${
+                activeTab === "watchlist"
+                  ? "text-[#D4AF37]"
+                  : "text-gray-400 hover:text-gray-300"
+              }`}
+            >
+              見たいリスト ({watchlist.length})
+              {activeTab === "watchlist" && (
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#D4AF37] animate-in slide-in-from-left duration-300" />
+              )}
+            </button>
           </div>
         </div>
 
@@ -180,10 +300,31 @@ export default function Home() {
                 <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#D4AF37] border-t-transparent"></div>
               </div>
             ) : (
-              <PopularMoviesCarousel
-                movies={popularMovies}
-                onMovieSelect={handleMovieSelect}
-              />
+              <>
+                <PopularMoviesCarousel
+                  movies={popularMovies}
+                  onMovieSelect={handleMovieSelect}
+                  title="世界の人気映画 TOP 30"
+                />
+                
+                {/* 国内人気映画 */}
+                {!isLoadingRegional && regionalMovies.length > 0 && (
+                  <PopularMoviesCarousel
+                    movies={regionalMovies}
+                    onMovieSelect={handleMovieSelect}
+                    title="🇯🇵 国内の人気映画"
+                  />
+                )}
+
+                {/* おすすめ映画 */}
+                {!isLoadingRecommended && recommendedMovies.length > 0 && (
+                  <PopularMoviesCarousel
+                    movies={recommendedMovies}
+                    onMovieSelect={handleMovieSelect}
+                    title="⭐ あなたへのおすすめ"
+                  />
+                )}
+              </>
             )}
           </div>
 
@@ -198,6 +339,20 @@ export default function Home() {
               reviews={reviews}
               onEdit={handleEdit}
               onDelete={handleDelete}
+            />
+          </div>
+
+          <div
+            className={`transition-all duration-500 ease-in-out ${
+              activeTab === "watchlist"
+                ? "opacity-100 translate-x-0"
+                : "opacity-0 translate-x-8 absolute inset-0 pointer-events-none"
+            }`}
+          >
+            <WatchlistList
+              watchlist={watchlist}
+              onMovieSelect={handleWatchlistMovieSelect}
+              onRemove={handleWatchlistRemove}
             />
           </div>
         </div>
@@ -217,6 +372,7 @@ export default function Home() {
           }
           onSave={handleSaveReview}
           onCancel={handleCancel}
+          onWatchlistChange={loadWatchlist}
         />
       )}
     </div>

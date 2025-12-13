@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Star, X, Film, Calendar, Users, Tags } from "lucide-react";
+import { Star, X, Film, Calendar, Users, Tags, Bookmark, BookmarkCheck } from "lucide-react";
 import { MovieSearchResult, RatingCriteria, ReviewInput } from "@/types/movie";
-import { getPosterUrl, getMovieDetails } from "@/lib/tmdb";
+import { getPosterUrl, getBackdropUrl, getMovieDetails } from "@/lib/tmdb";
 import { calculateOverallRating, convertToStarRating } from "@/lib/reviews";
+import { addToWatchlist, removeFromWatchlist, isInWatchlist } from "@/lib/watchlist";
 
 interface RatingFormProps {
   movie: MovieSearchResult | null;
@@ -14,6 +15,7 @@ interface RatingFormProps {
   } | null;
   onSave: (review: ReviewInput) => void;
   onCancel: () => void;
+  onWatchlistChange?: () => void;
 }
 
 const RATING_CRITERIA = [
@@ -29,6 +31,7 @@ export default function RatingForm({
   existingReview,
   onSave,
   onCancel,
+  onWatchlistChange,
 }: RatingFormProps) {
   const [ratings, setRatings] = useState<RatingCriteria>({
     story: 5,
@@ -43,8 +46,11 @@ export default function RatingForm({
     genres?: { id: number; name: string }[];
     director?: { name: string } | null;
     cast?: { name: string }[];
+    backdrop_path?: string | null;
   } | null>(null);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+  const [isInWatchlistState, setIsInWatchlistState] = useState(false);
+  const [isWatchlistLoading, setIsWatchlistLoading] = useState(false);
 
   // 背景スクロールを無効化
   useEffect(() => {
@@ -71,6 +77,13 @@ export default function RatingForm({
     }
   }, [existingReview, movie]);
 
+  // 見たいリストの状態を確認
+  useEffect(() => {
+    if (movie) {
+      setIsInWatchlistState(isInWatchlist(movie.id));
+    }
+  }, [movie]);
+
   // 映画詳細を取得
   useEffect(() => {
     if (!movie) return;
@@ -88,6 +101,7 @@ export default function RatingForm({
           genres: details.genres || [],
           director: director ? { name: director.name } : null,
           cast: mainCast.map((person) => ({ name: person.name })),
+          backdrop_path: details.backdrop_path,
         });
       })
       .catch((error) => {
@@ -102,12 +116,40 @@ export default function RatingForm({
 
   const updateRating = (key: keyof RatingCriteria, value: number) => {
     const newRatings = { ...ratings, [key]: value };
-    const overall = calculateOverallRating(newRatings);
-    setRatings({ ...newRatings, overall });
+    // 総合評価を手動で変更した場合は、そのまま使用
+    // それ以外の項目を変更した場合は平均を計算
+    if (key === "overall") {
+      setRatings({ ...newRatings });
+    } else {
+      const overall = calculateOverallRating(newRatings);
+      setRatings({ ...newRatings, overall });
+    }
   };
 
-  const overallRating = calculateOverallRating(ratings);
+  const overallRating = ratings.overall;
   const starRating = convertToStarRating(overallRating);
+
+  const handleWatchlistToggle = async () => {
+    if (!movie || isWatchlistLoading) return;
+
+    setIsWatchlistLoading(true);
+    try {
+      if (isInWatchlistState) {
+        removeFromWatchlist(movie.id);
+        setIsInWatchlistState(false);
+      } else {
+        addToWatchlist(movie);
+        setIsInWatchlistState(true);
+      }
+      if (onWatchlistChange) {
+        onWatchlistChange();
+      }
+    } catch (error) {
+      console.error("Error toggling watchlist:", error);
+    } finally {
+      setIsWatchlistLoading(false);
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -125,6 +167,8 @@ export default function RatingForm({
   };
 
   const posterUrl = getPosterUrl(movie.poster_path);
+  const backdropUrl = getBackdropUrl(movieDetails?.backdrop_path || null);
+  const backgroundImageUrl = backdropUrl || posterUrl;
   const releaseDate = movie.release_date
     ? new Date(movie.release_date).toLocaleDateString("ja-JP", {
         year: "numeric",
@@ -134,8 +178,33 @@ export default function RatingForm({
     : null;
 
   return (
-    <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
-      <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col animate-in zoom-in-95 duration-300">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-300"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onCancel();
+        }
+      }}
+    >
+      {/* 背景画像 */}
+      {backgroundImageUrl && (
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{
+            backgroundImage: `url(${backgroundImageUrl})`,
+          }}
+        >
+          <div className="absolute inset-0 bg-black/85 backdrop-blur-sm" />
+        </div>
+      )}
+      {!backgroundImageUrl && (
+        <div className="absolute inset-0 bg-black/90 backdrop-blur-sm" />
+      )}
+
+      <div
+        className="relative bg-[#0a0a0a]/95 backdrop-blur-md border border-[#1a1a1a] rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col animate-in zoom-in-95 duration-300 shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* ヘッダー */}
         <div className="sticky top-0 bg-[#0a0a0a] border-b border-[#1a1a1a] p-6 flex items-start justify-between flex-shrink-0">
           <div className="flex items-start gap-4 flex-1 min-w-0">
@@ -198,16 +267,42 @@ export default function RatingForm({
               )}
             </div>
           </div>
-          <button
-            onClick={onCancel}
-            className="text-gray-400 hover:text-white transition-colors ml-4 flex-shrink-0"
-          >
-            <X className="h-6 w-6" />
-          </button>
+          <div className="flex items-center gap-2 ml-4 flex-shrink-0">
+            {/* 見たいリストボタン */}
+            <button
+              onClick={handleWatchlistToggle}
+              disabled={isWatchlistLoading}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all duration-300 ${
+                isInWatchlistState
+                  ? "bg-[#D4AF37]/20 border-[#D4AF37] text-[#D4AF37] hover:bg-[#D4AF37]/30"
+                  : "bg-[#0a0a0a] border-[#1a1a1a] text-gray-300 hover:border-[#D4AF37]/50 hover:text-[#D4AF37]"
+              } ${isWatchlistLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+            >
+              {isWatchlistLoading ? (
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+              ) : isInWatchlistState ? (
+                <>
+                  <BookmarkCheck className="h-5 w-5" />
+                  <span className="text-sm font-medium">追加済み</span>
+                </>
+              ) : (
+                <>
+                  <Bookmark className="h-5 w-5" />
+                  <span className="text-sm font-medium">見たいリストに追加</span>
+                </>
+              )}
+            </button>
+            <button
+              onClick={onCancel}
+              className="text-gray-400 hover:text-white transition-colors"
+            >
+              <X className="h-6 w-6" />
+            </button>
+          </div>
         </div>
 
         {/* スクロール可能なコンテンツ */}
-        <div className="overflow-y-auto flex-1">
+        <div className="overflow-y-auto flex-1 custom-scrollbar">
           {/* あらすじ */}
           {movie.overview && (
             <div className="p-6 border-b border-[#1a1a1a]">
@@ -222,12 +317,12 @@ export default function RatingForm({
 
           {/* フォーム */}
           <form onSubmit={handleSubmit} className="p-6 space-y-8">
-            {/* 総合評価（星表示） */}
+            {/* 総合評価（星表示 + スライダー） */}
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-4">
                 総合評価
               </label>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 mb-4">
                 <div className="flex items-center gap-1">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <Star
@@ -244,8 +339,24 @@ export default function RatingForm({
                   {starRating}/5 ({overallRating}/10)
                 </span>
               </div>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-400">総合評価を手動調整</span>
+                  <span className="text-sm font-semibold text-[#D4AF37]">
+                    {overallRating}/10
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="1"
+                  max="10"
+                  value={overallRating}
+                  onChange={(e) => updateRating("overall", parseInt(e.target.value))}
+                  className="w-full h-2 bg-[#1a1a1a] rounded-lg appearance-none cursor-pointer accent-[#D4AF37]"
+                />
+              </div>
               <p className="text-xs text-gray-500 mt-2">
-                ※ 各項目の平均値から自動計算されます
+                ※ 各項目の平均値から自動計算されますが、手動で調整も可能です
               </p>
             </div>
 

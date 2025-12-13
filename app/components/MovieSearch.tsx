@@ -206,12 +206,12 @@ export default function MovieSearch({ onMovieSelect }: MovieSearchProps) {
                   onClick={() => onMovieSelect(movie)}
                   className="group flex flex-col h-full overflow-hidden rounded-lg border border-[#1a1a1a] bg-[#0a0a0a] hover:border-[#D4AF37]/50 transition-all duration-500 text-left"
                 >
-                  <div className="relative w-full aspect-[2/3] overflow-hidden transition-transform duration-500 group-hover:scale-105">
+                  <div className="relative w-full aspect-[2/3] overflow-hidden rounded-lg transition-transform duration-500 group-hover:scale-105">
                     {posterUrl ? (
                       <img
                         src={posterUrl}
                         alt={movie.title}
-                        className="object-cover w-full h-full transition-transform duration-500"
+                        className="object-cover w-full h-full"
                       />
                     ) : (
                       <div className="w-full h-full bg-[#2a2a2a] flex flex-col items-center justify-center">
@@ -223,9 +223,16 @@ export default function MovieSearch({ onMovieSelect }: MovieSearchProps) {
                     )}
                   </div>
                   <div className="flex-1 p-4 flex flex-col">
-                    <h3 className="text-sm font-semibold text-white mb-1 line-clamp-2">
-                      {movie.title}
-                    </h3>
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="text-sm font-semibold text-white line-clamp-2 flex-1">
+                        {movie.title}
+                      </h3>
+                      {movie.media_type && (
+                        <span className="text-xs px-2 py-0.5 rounded bg-[#D4AF37]/20 text-[#D4AF37] border border-[#D4AF37]/30 flex-shrink-0">
+                          {movie.media_type === "movie" ? "映画" : "ドラマ"}
+                        </span>
+                      )}
+                    </div>
                     {movie.release_date && (
                       <p className="text-xs text-gray-500 mt-1">
                         {new Date(movie.release_date).getFullYear()}
