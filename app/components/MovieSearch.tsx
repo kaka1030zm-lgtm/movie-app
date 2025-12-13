@@ -7,9 +7,10 @@ import { searchMulti, getGenres } from "@/lib/tmdb";
 
 interface MovieSearchProps {
   onMovieSelect: (movie: MovieSearchResult) => void;
+  onSearchStateChange?: (hasResults: boolean) => void;
 }
 
-export default function MovieSearch({ onMovieSelect }: MovieSearchProps) {
+export default function MovieSearch({ onMovieSelect, onSearchStateChange }: MovieSearchProps) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<MovieSearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -62,6 +63,9 @@ export default function MovieSearch({ onMovieSelect }: MovieSearchProps) {
 
     if (!query.trim()) {
       setResults([]);
+      if (onSearchStateChange) {
+        onSearchStateChange(false);
+      }
       return;
     }
 
@@ -129,10 +133,16 @@ export default function MovieSearch({ onMovieSelect }: MovieSearchProps) {
         }
 
         setResults(sortedResults);
+        if (onSearchStateChange) {
+          onSearchStateChange(sortedResults.length > 0);
+        }
       }
     } catch (error) {
       console.error("Error searching movies:", error);
       setResults([]);
+      if (onSearchStateChange) {
+        onSearchStateChange(false);
+      }
     } finally {
       setIsLoading(false);
     }

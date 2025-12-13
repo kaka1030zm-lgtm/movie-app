@@ -39,6 +39,7 @@ export default function Home() {
     isOpen: false,
     reviewId: null,
   });
+  const [hasSearchResults, setHasSearchResults] = useState(false);
 
   // レビューを読み込む
   useEffect(() => {
@@ -259,56 +260,62 @@ export default function Home() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* 検索セクション */}
         <div className="mb-12">
-          <MovieSearch onMovieSelect={handleMovieSelect} />
+          <MovieSearch 
+            onMovieSelect={handleMovieSelect} 
+            onSearchStateChange={setHasSearchResults}
+          />
         </div>
 
-        {/* タブ */}
-        <div className="mb-8 border-b border-[#1a1a1a]">
-          <div className="flex gap-1">
-            <button
-              onClick={() => setActiveTab("popular")}
-              className={`px-6 py-3 font-medium transition-all duration-300 relative ${
-                activeTab === "popular"
-                  ? "text-[#D4AF37]"
-                  : "text-gray-400 hover:text-gray-300"
-              }`}
-            >
-              人気の映画
-              {activeTab === "popular" && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#D4AF37] animate-in slide-in-from-left duration-300" />
-              )}
-            </button>
-            <button
-              onClick={() => setActiveTab("reviews")}
-              className={`px-6 py-3 font-medium transition-all duration-300 relative ${
-                activeTab === "reviews"
-                  ? "text-[#D4AF37]"
-                  : "text-gray-400 hover:text-gray-300"
-              }`}
-            >
-              マイレビュー ({reviews.length})
-              {activeTab === "reviews" && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#D4AF37] animate-in slide-in-from-left duration-300" />
-              )}
-            </button>
-            <button
-              onClick={() => setActiveTab("watchlist")}
-              className={`px-6 py-3 font-medium transition-all duration-300 relative ${
-                activeTab === "watchlist"
-                  ? "text-[#D4AF37]"
-                  : "text-gray-400 hover:text-gray-300"
-              }`}
-            >
-              見たいリスト ({watchlist.length})
-              {activeTab === "watchlist" && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#D4AF37] animate-in slide-in-from-left duration-300" />
-              )}
-            </button>
+        {/* Tabs - hidden when search results are displayed */}
+        {!hasSearchResults && (
+          <div className="mb-8 border-b border-[#1a1a1a]">
+            <div className="flex gap-1">
+              <button
+                onClick={() => setActiveTab("popular")}
+                className={`px-6 py-3 font-medium transition-all duration-300 relative ${
+                  activeTab === "popular"
+                    ? "text-[#D4AF37]"
+                    : "text-gray-400 hover:text-gray-300"
+                }`}
+              >
+                人気の映画
+                {activeTab === "popular" && (
+                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#D4AF37] animate-in slide-in-from-left duration-300" />
+                )}
+              </button>
+              <button
+                onClick={() => setActiveTab("reviews")}
+                className={`px-6 py-3 font-medium transition-all duration-300 relative ${
+                  activeTab === "reviews"
+                    ? "text-[#D4AF37]"
+                    : "text-gray-400 hover:text-gray-300"
+                }`}
+              >
+                マイレビュー ({reviews.length})
+                {activeTab === "reviews" && (
+                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#D4AF37] animate-in slide-in-from-left duration-300" />
+                )}
+              </button>
+              <button
+                onClick={() => setActiveTab("watchlist")}
+                className={`px-6 py-3 font-medium transition-all duration-300 relative ${
+                  activeTab === "watchlist"
+                    ? "text-[#D4AF37]"
+                    : "text-gray-400 hover:text-gray-300"
+                }`}
+              >
+                見たいリスト ({watchlist.length})
+                {activeTab === "watchlist" && (
+                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#D4AF37] animate-in slide-in-from-left duration-300" />
+                )}
+              </button>
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* タブコンテンツ */}
-        <div className="relative">
+        {/* Tab content - hidden when search results are displayed */}
+        {!hasSearchResults && (
+          <div className="relative">
           <div
             className={`transition-all duration-500 ease-in-out ${
               activeTab === "popular"
@@ -378,6 +385,7 @@ export default function Home() {
             />
           </div>
         </div>
+        )}
       </main>
 
       {/* 評価フォームモーダル */}
