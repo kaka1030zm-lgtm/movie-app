@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Search, X, Film, Filter } from "lucide-react";
+import { Search, X, Film, Filter, Clock, ArrowUpDown } from "lucide-react";
 import { MovieSearchResult } from "@/types/movie";
 import { searchMulti, getGenres } from "@/lib/tmdb";
 
@@ -17,6 +17,10 @@ export default function MovieSearch({ onMovieSelect }: MovieSearchProps) {
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
   const [genres, setGenres] = useState<{ id: number; name: string }[]>([]);
   const [showFilters, setShowFilters] = useState(false);
+  const [sortBy, setSortBy] = useState<"popularity" | "rating" | "date">("popularity");
+  const [searchHistory, setSearchHistory] = useState<string[]>([]);
+  const [showHistory, setShowHistory] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // ジャンル一覧を取得
@@ -25,6 +29,30 @@ export default function MovieSearch({ onMovieSelect }: MovieSearchProps) {
       .then((data) => setGenres(data))
       .catch((error) => console.error("Error fetching genres:", error));
   }, []);
+
+  // 検索履歴を読み込む
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const history = localStorage.getItem("movieSearchHistory");
+      if (history) {
+        try {
+          const parsed = JSON.parse(history);
+          setSearchHistory(Array.isArray(parsed) ? parsed.slice(0, 5) : []);
+        } catch (e) {
+          console.error("Error parsing search history:", e);
+        }
+      }
+    }
+  }, []);
+
+  // 検索履歴を保存
+  const saveToHistory = (searchQuery: string) => {
+    if (!searchQuery.trim() || typeof window === "undefined") return;
+    const trimmed = searchQuery.trim();
+    const updated = [trimmed, ...searchHistory.filter((h) => h !== trimmed)].slice(0, 5);
+    setSearchHistory(updated);
+    localStorage.setItem("movieSearchHistory", JSON.stringify(updated));
+  };
 
   // 検索のデバウンス処理
   useEffect(() => {
@@ -39,6 +67,7 @@ export default function MovieSearch({ onMovieSelect }: MovieSearchProps) {
 
     debounceTimerRef.current = setTimeout(async () => {
       await performSearch(query);
+      saveToHistory(query);
     }, 300);
 
     return () => {
@@ -46,7 +75,7 @@ export default function MovieSearch({ onMovieSelect }: MovieSearchProps) {
         clearTimeout(debounceTimerRef.current);
       }
     };
-  }, [query, selectedGenre, selectedYear]);
+  }, [query, selectedGenre, selectedYear, sortBy]);
 
   const performSearch = async (searchQuery: string) => {
     setIsLoading(true);
@@ -85,7 +114,21 @@ export default function MovieSearch({ onMovieSelect }: MovieSearchProps) {
           });
         }
 
-        setResults(filteredResults);
+        // ソート処理
+        let sortedResults = [...filteredResults];
+        if (sortBy === "popularity") {
+          sortedResults.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
+        } else if (sortBy === "rating") {
+          sortedResults.sort((a, b) => (b.vote_average || 0) - (a.vote_average || 0));
+        } else if (sortBy === "date") {
+          sortedResults.sort((a, b) => {
+            const dateA = a.release_date ? new Date(a.release_date).getTime() : 0;
+            const dateB = b.release_date ? new Date(b.release_date).getTime() : 0;
+            return dateB - dateA;
+          });
+        }
+
+        setResults(sortedResults);
       }
     } catch (error) {
       console.error("Error searching movies:", error);
@@ -210,10 +253,25 @@ export default function MovieSearch({ onMovieSelect }: MovieSearchProps) {
       {/* 検索結果 */}
       {query.trim() && results.length > 0 && (
         <div>
-          <h3 className="text-2xl font-bold text-white mb-6">
-            検索結果 ({results.length}件)
-          </h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-2xl font-bold text-white">
+              検索結果 ({results.length}件)
+            </h3>
+            {/* ソート機能 */}
+            <div className="flex items-center gap-2">
+              <ArrowUpDown className="h-4 w-4 text-gray-400" />
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as "popularity" | "rating" | "date")}
+                className="rounded-lg border border-[#1a1a1a] bg-[#0a0a0a] px-3 py-2 pr-8 text-sm text-white focus:border-[#D4AF37] focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/30 transition-all appearance-none cursor-pointer hover:border-[#D4AF37]/50"
+              >
+                <option value="popularity">人気順</option>
+                <option value="rating">評価順</option>
+                <option value="date">公開日順</option>
+              </select>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-6">
             {results.map((movie) => {
               const posterUrl = movie.poster_path
                 ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`

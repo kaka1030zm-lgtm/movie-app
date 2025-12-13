@@ -57,12 +57,16 @@ export default function PopularMoviesCarousel({
       </h3>
 
       <div className="relative group">
-        {/* 左矢印 - 高級感のあるデザイン */}
+        {/* 左矢印 - ポスターの中心の高さに配置 */}
         {canScrollLeft && (
           <button
             onClick={() => scroll("left")}
             onMouseEnter={() => checkScrollability()}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-20 bg-gradient-to-r from-black/90 via-black/80 to-transparent backdrop-blur-md border border-[#D4AF37]/40 rounded-full p-4 hover:bg-gradient-to-r hover:from-[#D4AF37]/20 hover:via-[#D4AF37]/10 hover:to-transparent hover:border-[#D4AF37] transition-all duration-500 shadow-lg shadow-[#D4AF37]/20 opacity-0 group-hover:opacity-100"
+            className="absolute left-0 z-20 bg-gradient-to-r from-black/90 via-black/80 to-transparent backdrop-blur-md border border-[#D4AF37]/40 rounded-full p-4 hover:bg-gradient-to-r hover:from-[#D4AF37]/20 hover:via-[#D4AF37]/10 hover:to-transparent hover:border-[#D4AF37] transition-all duration-500 shadow-lg shadow-[#D4AF37]/20 opacity-0 group-hover:opacity-100"
+            style={{ 
+              top: 'calc((100% * 2/3) / 2)',
+              transform: 'translateY(-50%)'
+            }}
             aria-label="前へ"
           >
             <ChevronLeft className="h-7 w-7 text-[#D4AF37] drop-shadow-lg" />
@@ -128,12 +132,16 @@ export default function PopularMoviesCarousel({
           })}
         </div>
 
-        {/* 右矢印 - 高級感のあるデザイン */}
+        {/* 右矢印 - ポスターの中心の高さに配置 */}
         {canScrollRight && (
           <button
             onClick={() => scroll("right")}
             onMouseEnter={() => checkScrollability()}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-20 bg-gradient-to-l from-black/90 via-black/80 to-transparent backdrop-blur-md border border-[#D4AF37]/40 rounded-full p-4 hover:bg-gradient-to-l hover:from-[#D4AF37]/20 hover:via-[#D4AF37]/10 hover:to-transparent hover:border-[#D4AF37] transition-all duration-500 shadow-lg shadow-[#D4AF37]/20 opacity-0 group-hover:opacity-100"
+            className="absolute right-0 z-20 bg-gradient-to-l from-black/90 via-black/80 to-transparent backdrop-blur-md border border-[#D4AF37]/40 rounded-full p-4 hover:bg-gradient-to-l hover:from-[#D4AF37]/20 hover:via-[#D4AF37]/10 hover:to-transparent hover:border-[#D4AF37] transition-all duration-500 shadow-lg shadow-[#D4AF37]/20 opacity-0 group-hover:opacity-100"
+            style={{ 
+              top: 'calc((100% * 2/3) / 2)',
+              transform: 'translateY(-50%)'
+            }}
             aria-label="次へ"
           >
             <ChevronRight className="h-7 w-7 text-[#D4AF37] drop-shadow-lg" />
