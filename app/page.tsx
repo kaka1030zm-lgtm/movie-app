@@ -319,7 +319,7 @@ export default function Home() {
           <div
             className={`transition-all duration-500 ease-in-out ${
               activeTab === "popular"
-                ? "opacity-100 translate-x-0"
+                ? "opacity-100 translate-x-0 relative"
                 : "opacity-0 translate-x-8 absolute inset-0 pointer-events-none"
             }`}
           >
