@@ -57,9 +57,7 @@ export default function WatchlistList({
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  if (confirm("見たいリストから削除しますか？")) {
-                    onRemove(item.id);
-                  }
+                  onRemove(item.id);
                 }}
                 className="absolute top-2 right-2 bg-black/70 backdrop-blur-sm rounded-full p-2 hover:bg-red-500/90 transition-colors opacity-0 group-hover:opacity-100"
                 title="削除"

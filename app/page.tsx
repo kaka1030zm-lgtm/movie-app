@@ -39,6 +39,10 @@ export default function Home() {
     isOpen: false,
     reviewId: null,
   });
+  const [watchlistDeleteConfirm, setWatchlistDeleteConfirm] = useState<{ isOpen: boolean; movieId: number | null }>({
+    isOpen: false,
+    movieId: null,
+  });
   const [hasSearchResults, setHasSearchResults] = useState(false);
 
   // レビューを読み込む
@@ -231,9 +235,14 @@ export default function Home() {
   };
 
   const handleWatchlistRemove = (movieId: number) => {
-    if (removeFromWatchlist(movieId)) {
+    setWatchlistDeleteConfirm({ isOpen: true, movieId });
+  };
+
+  const confirmWatchlistDelete = () => {
+    if (watchlistDeleteConfirm.movieId && removeFromWatchlist(watchlistDeleteConfirm.movieId)) {
       loadWatchlist();
     }
+    setWatchlistDeleteConfirm({ isOpen: false, movieId: null });
   };
 
   const handleReviewMovieClick = (review: Review) => {
@@ -406,7 +415,7 @@ export default function Home() {
         />
       )}
 
-      {/* 削除確認モーダル */}
+      {/* レビュー削除確認モーダル */}
       <ConfirmModal
         isOpen={deleteConfirm.isOpen}
         title="レビューを削除"
@@ -415,6 +424,17 @@ export default function Home() {
         cancelText="キャンセル"
         onConfirm={confirmDelete}
         onCancel={() => setDeleteConfirm({ isOpen: false, reviewId: null })}
+      />
+
+      {/* 見たいリスト削除確認モーダル */}
+      <ConfirmModal
+        isOpen={watchlistDeleteConfirm.isOpen}
+        title="見たいリストから削除"
+        message="この映画を見たいリストから削除しますか？"
+        confirmText="削除"
+        cancelText="キャンセル"
+        onConfirm={confirmWatchlistDelete}
+        onCancel={() => setWatchlistDeleteConfirm({ isOpen: false, movieId: null })}
       />
     </div>
   );
