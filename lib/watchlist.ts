@@ -85,3 +85,5 @@ export function isInWatchlist(movieId: number): boolean {
   const watchlist = getWatchlist();
   return watchlist.some((item) => item.id === movieId);
 }
+
+

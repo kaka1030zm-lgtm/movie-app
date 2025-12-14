@@ -106,3 +106,5 @@ export function getReviewByMovieId(movieId: number): Review | null {
   const reviews = getAllReviews();
   return reviews.find((r) => r.movie_id === movieId) || null;
 }
+
+

@@ -7,7 +7,7 @@ import { getPosterUrl } from "@/lib/tmdb";
 
 interface PopularMoviesCarouselProps {
   movies: MovieSearchResult[];
-  onMovieSelect: (movie: MovieSearchResult) => void;
+  onMovieSelect: (movie: MovieSearchResult, event?: React.MouseEvent) => void;
   title?: string;
 }
 
@@ -51,20 +51,22 @@ export default function PopularMoviesCarousel({
   if (movies.length === 0) return null;
 
   return (
-    <div className="relative mb-12">
-      <h3 className="text-2xl font-bold text-white mb-6">
-        {title || "人気の映画 TOP 30"}
-      </h3>
+    <div className="relative overflow-visible">
+      <div className="mb-6 flex items-center gap-3">
+        <h3 className="text-xl font-semibold text-white/90">
+          {title || "人気の映画"}
+        </h3>
+      </div>
 
-      <div className="relative group">
+      <div className="relative group overflow-visible">
         {/* 左矢印 - ポスターの中心の高さに配置 */}
         {canScrollLeft && (
           <button
             onClick={() => scroll("left")}
             onMouseEnter={() => checkScrollability()}
-            className="absolute left-0 z-20 bg-gradient-to-r from-black/90 via-black/80 to-transparent backdrop-blur-md border border-[#D4AF37]/40 rounded-full p-4 hover:bg-gradient-to-r hover:from-[#D4AF37]/20 hover:via-[#D4AF37]/10 hover:to-transparent hover:border-[#D4AF37] transition-all duration-500 shadow-lg shadow-[#D4AF37]/20 opacity-0 group-hover:opacity-100"
+            className="absolute z-20 bg-gradient-to-r from-black/90 via-black/80 to-transparent backdrop-blur-md border border-[#D4AF37]/40 rounded-full p-4 hover:bg-gradient-to-r hover:from-[#D4AF37]/20 hover:via-[#D4AF37]/10 hover:to-transparent hover:border-[#D4AF37] transition-all duration-500 shadow-lg shadow-[#D4AF37]/20 opacity-0 group-hover:opacity-100 left-0 sm:-left-4"
             style={{ 
-              top: 'calc((100% * 2/3) / 2)',
+              top: 'calc(2rem + (10rem * 1.5) / 2)',
               transform: 'translateY(-50%)'
             }}
             aria-label="前へ"
@@ -77,77 +79,95 @@ export default function PopularMoviesCarousel({
         <div
           ref={scrollRef}
           onScroll={checkScrollability}
-          className="flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth pb-4"
+          className="flex gap-4 overflow-x-auto overflow-y-visible scrollbar-hide scroll-smooth py-8 px-4 -mx-4"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           {movies.map((movie, index) => {
             const posterUrl = getPosterUrl(movie.poster_path);
             return (
-              <button
+              <div
                 key={movie.id}
-                onClick={() => onMovieSelect(movie)}
-                className="flex-shrink-0 w-28 sm:w-36 group/movie transition-all duration-300"
+                className="flex-shrink-0 w-40 sm:w-48 group/movie transition-all duration-300 cursor-pointer"
+                style={{ transform: "translateZ(0)" }}
+                onClick={(e) => onMovieSelect(movie, e)}
               >
-                <div className="relative aspect-[2/3] overflow-hidden rounded-lg border border-[#1a1a1a] bg-[#0a0a0a] transition-all duration-500 group-hover/movie:scale-110 group-hover/movie:border-[#D4AF37]/60 group-hover/movie:shadow-xl group-hover/movie:shadow-[#D4AF37]/20">
-                  {/* ランキングバッジ */}
-                  <div className="absolute top-2 left-2 z-10 bg-gradient-to-br from-[#D4AF37] to-[#B8941F] text-black text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shadow-lg">
-                    {index + 1}
-                  </div>
-
-                  {posterUrl ? (
-                    <img
-                      src={posterUrl}
-                      alt={movie.title}
-                      className="object-cover w-full h-full transition-transform duration-500"
-                      onError={(e) => {
-                        e.currentTarget.style.display = "none";
-                        const placeholder = e.currentTarget.nextElementSibling as HTMLElement;
-                        if (placeholder) placeholder.style.display = "flex";
-                      }}
-                    />
-                  ) : null}
-                  <div
-                    className={`w-full h-full bg-[#2a2a2a] flex flex-col items-center justify-center ${
-                      posterUrl ? "hidden" : ""
-                    }`}
+                <div className="transition-all duration-200 group-hover/movie:scale-110 group-hover/movie:z-10">
+                  <div 
+                    className="relative aspect-[2/3] overflow-hidden rounded-lg border border-[#1a1a1a] bg-[#0a0a0a] group-hover/movie:border-[#D4AF37]/60 group-hover/movie:shadow-xl group-hover/movie:shadow-[#D4AF37]/20"
                   >
-                    <Film className="h-8 w-8 text-gray-600 mb-2" />
-                    <p className="text-xs text-gray-500 text-center px-2 line-clamp-2">
-                      {movie.title}
-                    </p>
+                    {/* ランキングバッジ - 高級感のある小さなラベル（あなたへのおすすめ以外） */}
+                    {title && !title.includes("あなたへのおすすめ") && (
+                      <div className="absolute top-1.5 left-1.5 z-10">
+                        <div className="px-1.5 py-0.5 bg-black/70 backdrop-blur-sm border border-[#D4AF37]/40 rounded text-[10px] font-semibold text-[#D4AF37] tracking-tight">
+                          #{index + 1}
+                        </div>
+                      </div>
+                    )}
+
+                    {posterUrl ? (
+                      <img
+                        src={posterUrl}
+                        alt={movie.title}
+                        className="object-cover w-full h-full"
+                        onError={(e) => {
+                          e.currentTarget.style.display = "none";
+                          const placeholder = e.currentTarget.nextElementSibling as HTMLElement;
+                          if (placeholder) placeholder.style.display = "flex";
+                        }}
+                      />
+                    ) : null}
+                    <div
+                      className={`w-full h-full bg-[#2a2a2a] flex flex-col items-center justify-center ${
+                        posterUrl ? "hidden" : ""
+                      }`}
+                    >
+                      <Film className="h-8 w-8 text-gray-600 mb-2" />
+                      <p className="text-xs text-gray-500 text-center px-2 line-clamp-2">
+                        {movie.title}
+                      </p>
+                    </div>
                   </div>
+                  {/* タイトルと年号バッジ */}
+                  <div className="mt-3 flex items-center gap-2 flex-wrap">
+                    <h4 className="text-sm sm:text-base font-semibold text-white line-clamp-2 flex-1 min-w-0">
+                      {movie.title}
+                    </h4>
+                    {movie.release_date && (
+                      <span className="px-2.5 py-1 bg-gray-600/70 text-gray-200 text-xs font-medium rounded-full flex-shrink-0 whitespace-nowrap">
+                        {new Date(movie.release_date).getFullYear()}
+                      </span>
+                    )}
+                  </div>
+                  {/* あらすじ */}
+                  {movie.overview && (
+                    <p className="mt-2 text-xs text-gray-400 line-clamp-2 leading-relaxed">
+                      {movie.overview}
+                    </p>
+                  )}
                 </div>
-                <div className="mt-2 min-h-[2.5rem]">
-                  <h4 className="text-xs sm:text-sm font-medium text-white line-clamp-2 text-left">
-                    {movie.title}
-                  </h4>
-                </div>
-                {movie.release_date && (
-                  <p className="text-xs text-gray-500 mt-1">
-                    {new Date(movie.release_date).getFullYear()}
-                  </p>
-                )}
-              </button>
+              </div>
             );
           })}
         </div>
 
-        {/* 右矢印 - ポスターの中心の高さに配置 */}
+        {/* 右矢印 - ポスターの外側（横）に配置 */}
         {canScrollRight && (
           <button
             onClick={() => scroll("right")}
             onMouseEnter={() => checkScrollability()}
-            className="absolute right-0 z-20 bg-gradient-to-l from-black/90 via-black/80 to-transparent backdrop-blur-md border border-[#D4AF37]/40 rounded-full p-4 hover:bg-gradient-to-l hover:from-[#D4AF37]/20 hover:via-[#D4AF37]/10 hover:to-transparent hover:border-[#D4AF37] transition-all duration-500 shadow-lg shadow-[#D4AF37]/20 opacity-0 group-hover:opacity-100"
+            className="absolute z-20 bg-gradient-to-l from-black/90 via-black/80 to-transparent backdrop-blur-md border border-[#D4AF37]/40 rounded-full p-4 hover:bg-gradient-to-l hover:from-[#D4AF37]/20 hover:via-[#D4AF37]/10 hover:to-transparent hover:border-[#D4AF37] transition-all duration-500 shadow-lg shadow-[#D4AF37]/20 opacity-0 group-hover:opacity-100 -right-12 sm:-right-16"
             style={{ 
-              top: 'calc((100% * 2/3) / 2)',
+              top: 'calc(2rem + 8px + (10rem * 1.5) / 2)',
               transform: 'translateY(-50%)'
             }}
             aria-label="次へ"
           >
-            <ChevronRight className="h-7 w-7 text-[#D4AF37] drop-shadow-lg" />
+            <ChevronRight className="h-7 w-7 text-[#D4AF37] drop-shadow-lg sm:h-8 sm:w-8" />
           </button>
         )}
       </div>
     </div>
   );
 }
+
+

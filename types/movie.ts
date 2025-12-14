@@ -59,3 +59,5 @@ export interface ReviewInput {
   ratings: RatingCriteria;
   comment: string | null;
 }
+
+

@@ -143,3 +143,5 @@ const config: CapacitorConfig = {
 
 - `next.config.ts`で`images.unoptimized: true`が設定されているか確認
 - 画像URLが正しく生成されているか確認
+
+
